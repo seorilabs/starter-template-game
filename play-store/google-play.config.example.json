@@ -1,0 +1,8 @@
+{
+  "packageName": "확정 필요",
+  "defaultLanguage": "ko-KR",
+  "track": "internal",
+  "serviceAccountSecretName": "확정 필요",
+  "aabPath": "release-artifacts/android/app-release.aab"
+}
+

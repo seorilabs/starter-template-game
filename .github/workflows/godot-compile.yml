@@ -1,0 +1,102 @@
+name: Godot Compile
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godot-compile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: Godot Compile
+    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    env:
+      GODOT_VERSION: "4.6.3"
+      GODOT_STATUS: stable
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Godot Runtime Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ldconfig -p 2>/dev/null | grep -q "libfontconfig.so.1"; then
+            echo "fontconfig runtime is already available"
+            exit 0
+          fi
+
+          if ! command -v apt-get >/dev/null 2>&1; then
+            echo "libfontconfig.so.1 is missing and apt-get is unavailable" >&2
+            exit 1
+          fi
+
+          sudo_cmd=""
+          if command -v sudo >/dev/null 2>&1; then
+            sudo_cmd="sudo"
+          fi
+
+          ${sudo_cmd} apt-get update
+          ${sudo_cmd} apt-get install -y libfontconfig1 fontconfig
+
+      - name: Ensure Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if command -v godot >/dev/null 2>&1 && godot --version | grep -q "^${GODOT_VERSION}.${GODOT_STATUS}"; then
+            echo "Using preinstalled Godot: $(command -v godot)"
+            godot --version
+            exit 0
+          fi
+
+          machine="$(uname -m)"
+          case "${machine}" in
+            aarch64|arm64)
+              godot_arch="arm64"
+              ;;
+            x86_64|amd64)
+              godot_arch="x86_64"
+              ;;
+            *)
+              echo "Unsupported runner architecture: ${machine}" >&2
+              exit 1
+              ;;
+          esac
+
+          install_dir="${RUNNER_TEMP}/godot"
+          archive="${install_dir}/godot.zip"
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.${godot_arch}.zip"
+
+          mkdir -p "${install_dir}" "${HOME}/.local/bin"
+          curl -fsSL "${url}" -o "${archive}"
+          unzip -q "${archive}" -d "${install_dir}"
+
+          binary="$(find "${install_dir}" -maxdepth 2 -type f -name "Godot_*_linux.${godot_arch}" -print -quit)"
+          if [ -z "${binary}" ]; then
+            echo "Godot linux.${godot_arch} binary not found in ${archive}" >&2
+            exit 1
+          fi
+
+          chmod +x "${binary}"
+          ln -sf "${binary}" "${HOME}/.local/bin/godot"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.local/bin/godot" --version
+
+      - name: Compile Project
+        shell: bash
+        run: bash scripts/godot_quality_gate.sh --project godot --smoke-scene res://tests/test_runner.tscn
+

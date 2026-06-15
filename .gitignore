@@ -1,0 +1,69 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+*.swp
+
+# Local agent overrides
+/AGENTS.local.md
+/AGENT.local.md
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.mobileprovision
+*.keystore
+*.jks
+*.key
+service-account*.json
+firebase-adminsdk*.json
+GoogleService-Info.plist
+google-services.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
+
+# Godot
+godot/.godot/
+godot/.import/
+godot/imported/
+godot/export.cfg
+godot/export_credentials.cfg
+*.translation
+
+# Build outputs
+build/
+dist/
+out/
+coverage/
+artifacts/
+release-artifacts/
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+*.ait
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Firebase local state
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
