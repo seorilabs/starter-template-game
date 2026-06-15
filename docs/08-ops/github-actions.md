@@ -4,6 +4,7 @@
 
 - `Godot Compile`: Godot import, compile, smoke scene.
 - `Repository Checks`: core, architecture, docs checks.
+- `Deploy Godot Web Pages`: `main` push 후 Godot Web export를 GitHub Pages로 배포.
 - `Release Inventory`: manual release blocker inventory.
 
 ## Runner Routing

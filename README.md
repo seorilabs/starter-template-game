@@ -26,7 +26,9 @@ npm run check:architecture
 npm run test:godot
 npm run check:docs
 npm run check:release
+npm run build:godot:web
 ```
 
 `check:release`는 템플릿 placeholder가 남아 있으면 실패한다. 릴리스 직전 blocker inventory 용도다.
 
+`main`에 push되면 GitHub Actions가 Godot Web export를 만들고 GitHub Pages에 배포한다. private repo의 Pages 사이트는 조직/플랜 설정에 따라 외부 공개될 수 있으므로, 민감한 리소스를 export에 포함하지 않는다.
