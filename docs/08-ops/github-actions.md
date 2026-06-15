@@ -21,3 +21,9 @@
 cat /Users/syous/Workspace/kubectl/github-actions-runners/global-versions.yaml
 ```
 
+2026-06-15 확인값:
+
+- `seorilabs-rpi-arm64`: `minRunners: 2`, `maxRunners: 4`
+- `seorilabs-rpi-arm64-dind`: `minRunners: 0`, `maxRunners: 1`
+
+수치는 운영 중 바뀔 수 있으므로 workflow 수정 전 중앙 파일을 다시 확인한다.
