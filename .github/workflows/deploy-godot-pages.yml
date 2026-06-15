@@ -70,7 +70,7 @@ jobs:
   deploy:
     name: Deploy GitHub Pages
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
     timeout-minutes: 10
     environment:
       name: github-pages
@@ -80,4 +80,3 @@ jobs:
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v5
-

@@ -4,7 +4,7 @@
 
 - `Godot Compile`: Godot import, compile, smoke scene.
 - `Repository Checks`: core, architecture, docs checks.
-- `Deploy Godot Web Pages`: `main` push 후 Godot Web export를 GitHub Pages로 배포.
+- `Deploy Godot Web Pages`: `main` push 후 Godot Web export를 GitHub Pages로 배포. private repo에서는 build/deploy 모두 `seorilabs-rpi-arm64`를 사용한다.
 - `Release Inventory`: manual release blocker inventory.
 
 ## Runner Routing
