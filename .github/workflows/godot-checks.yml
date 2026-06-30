@@ -1,0 +1,30 @@
+# main 정적 게이트(Godot) — org 재사용 워크플로우 호출.
+# import → compile/quality gate → smoke + core/architecture/docs. 무거운 export/배포 금지.
+name: Godot Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: godot-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: seorilabs/.github/.github/workflows/godot-checks.yml@main
+    secrets: inherit
+    with:
+      runs_on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
+      project_dir: godot
+      check_command: |
+        npm run test:core
+        npm run check:architecture
+        npm run check:docs
+        bash scripts/godot_quality_gate.sh --project godot --smoke-scene res://tests/test_runner.tscn
