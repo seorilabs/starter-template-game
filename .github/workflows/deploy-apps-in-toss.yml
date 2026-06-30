@@ -1,0 +1,38 @@
+# Godot Web export → AIT 래퍼 build → AppsInToss 배포 — ARC.
+name: Deploy AppsInToss
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      memo:
+        type: string
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      memo:
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ait:
+    uses: seorilabs/.github/.github/workflows/godot-deploy-ait.yml@main
+    secrets: inherit
+    with:
+      release_tag: ${{ inputs.release_tag }}
+      memo: ${{ inputs.memo }}
+      project_dir: godot
+      # TODO(게임별 확인): AIT 웹 래퍼 디렉터리
+      wrapper_dir: apps/ait

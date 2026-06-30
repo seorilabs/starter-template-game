@@ -1,0 +1,73 @@
+# Godot 서명 AAB + Google Play 업로드 — ubuntu(x64).
+# contract(tools/): set_google_play_version_code.py, upload_google_play_internal.py
+#   (선택) install_android_build_template.sh, build_admob_plugin.sh, check_google_play_readiness.py
+name: Deploy Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Google Play versionName SemVer (예: 1.0.1)"
+        type: string
+        required: true
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      version_code:
+        description: "비우면 versionName에서 파생"
+        type: string
+        required: false
+        default: ""
+      upload:
+        description: "true면 Google Play 업로드(false면 AAB 아티팩트만)"
+        type: boolean
+        default: false
+      track:
+        type: choice
+        options: [internal, production]
+        default: internal
+      release_status:
+        type: choice
+        options: [draft, completed]
+        default: draft
+  workflow_call:
+    inputs:
+      version_name:
+        type: string
+        required: true
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      version_code:
+        type: string
+        required: false
+        default: ""
+      upload:
+        type: boolean
+        default: true
+      track:
+        type: string
+        default: internal
+      release_status:
+        type: string
+        default: completed
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  google-play:
+    uses: seorilabs/.github/.github/workflows/godot-deploy-google-play.yml@main
+    secrets: inherit
+    with:
+      release_tag: ${{ inputs.release_tag }}
+      version_name: ${{ inputs.version_name }}
+      version_code: ${{ inputs.version_code }}
+      upload: ${{ inputs.upload }}
+      track: ${{ inputs.track }}
+      release_status: ${{ inputs.release_status }}
+      project_dir: godot
+      scripts_dir: tools
