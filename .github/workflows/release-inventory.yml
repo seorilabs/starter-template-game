@@ -9,7 +9,7 @@ permissions:
 jobs:
   inventory:
     name: Release Inventory
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
     timeout-minutes: 10
 
     steps:
