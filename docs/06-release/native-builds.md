@@ -4,7 +4,7 @@
 
 ## 개발 환경
 
-Godot 4.7.2, export templates, Python 3.11 이상을 사용한다. npm 명령은 Node 24가 필요하다. Android는 JDK 17과 Android SDK 36, iOS는 macOS와 Xcode가 필요하다. 기본 로컬 게임 실행에는 SDK와 자격증명이 필요 없다.
+Godot 4.7.2, export templates, Python 3.11 이상을 사용한다. npm 명령은 Node 24가 필요하다. Android는 JDK 21과 Android SDK 36, iOS는 macOS와 Xcode가 필요하다. 새 게임 초기화 후 로컬 실행에는 SDK 자격증명이 필요 없다. 이 저장소의 내부 테스트 앱은 실제 Platform과 Firebase를 사용한다.
 
 ```sh
 npm test
@@ -29,3 +29,12 @@ Deploy Google Play와 Deploy App Store Internal은 release_tag와 upload를 받�
 GitHub environment google-play에는 앱 전용 업로드 키의 세 Secret과 기존 WIF provider, publisher email 및 alias 변수가 필요하다. app-store에는 중앙 workflow가 선언한 기존 Apple Distribution, 앱 전용 provisioning profile, API key와 임시 CI keychain Secret, APPLE_TEAM_ID 변수가 필요하다. 로컬 카탈로그 원본을 확인해 필요한 값만 명시적으로 연결한다. secrets: inherit는 사용하지 않는다.
 
 서명된 파일의 실제 ID, 버전과 서명을 먼저 확인한다. 업로드 뒤 Play 트랙의 versionCode, TestFlight의 VALID, 내부 그룹과 테스터를 provider에서 다시 읽는다. workflow green이나 upload 응답을 내부 테스트 완료 또는 공개 출시로 대신하지 않는다.
+
+
+## 1.1.0 플랫폼 검수
+
+계정 생성, UID와 지원 코드, 연결과 복구, 저장과 우편함은 실제 Platform과 Firebase에 연결한다. 테스트 상품은 소모성 티켓과 영구 배지다. 결제는 마켓 테스트 수단만 허용하며, 서버 검증과 지급 확인 뒤 거래를 완료한다. 광고는 AdMob의 1.1.0 비수익 테스트 버전을 사용하고, 서버 시청 확인을 테스트 횟수로 표시한다.
+
+Analytics를 끄면 미전송 이벤트를 버리고 저장된 선택을 유지한다. 클라우드 진행 문서는 구매 증빙과 우편 보상을 보관하지 않는다. iOS에서는 추적 권한을 요청하지 않고 비개인화 광고를 사용한다. 계정 삭제 영수증은 로컬 전용 파일에 보관하며 삭제 상태 버튼에서 확인한다.
+
+개발 검수는 실제 시작 장면과 공통 SDK를 실행한다. 외부 HTTP와 저장, 마켓과 로그인 및 광고 네이티브 경계만 대체한다. 이 결과는 네이티브 인증과 실제 샌드박스 구매, 광고 및 기기 실행의 통과 근거가 아니다.

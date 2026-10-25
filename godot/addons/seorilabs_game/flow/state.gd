@@ -1,4 +1,5 @@
 extends RefCounted
+signal committed
 ## 로컬 예제의 저장과 지급은 같은 파일에서 원자적으로 확정한다.
 const Store = preload("res://addons/seorilabs_platform/core/atomic_json_store.gd")
 const SAVE_VERSION := 3
@@ -91,6 +92,7 @@ func commit(next: Dictionary) -> bool:
 		return false
 	data = next
 	error = ""
+	committed.emit()
 	return true
 
 func event(next: Dictionary, key: String, name: String) -> void:

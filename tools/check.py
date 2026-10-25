@@ -29,7 +29,7 @@ def main():
     p.add_argument('--project', default='godot')
     p.add_argument('--out', type=Path)
     p.add_argument('--capture', action='store_true')
-    p.add_argument('--size', default='390x844')
+    p.add_argument('--size', default='568x320')
     a = p.parse_args()
     root = a.root.resolve(); project = (root / a.project).resolve()
     if not project.is_relative_to(root): p.error('project must be inside repository')
@@ -53,8 +53,13 @@ def main():
                     [godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', script, '--', '--out', str(out), '--size', a.size, *(['--capture'] if a.capture else [])]]
         if (project / 'tests/game/core_probe.gd').is_file():
             commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/core_probe.gd'])
-        if (project / 'tests/game/native_market_probe.gd').is_file():
-            commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/native_market_probe.gd'])
+        for probe in ['accounts_probe.gd', 'account_services_probe.gd']:
+            commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/common/' + probe])
+        for probe in sorted((project / 'tests/game').glob('*_probe.gd')):
+            if probe.name != 'core_probe.gd': commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/' + probe.name])
+        platform_journey = (project / 'tests/game/platform_journey.gd').is_file()
+        if platform_journey:
+            commands.append([godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', 'res://tests/game/platform_journey.gd', '--', '--out', str(out / 'platform'), '--size', a.size, *(['--capture'] if a.capture else [])])
         if kind == 'reference':
             commands.append([godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', 'res://tests/reference/ui_navigation_probe.gd', '--', '--out', str(out / 'navigation'), *(['--capture'] if a.capture else [])])
         head = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
@@ -66,10 +71,17 @@ def main():
             if run.returncode or re.search(r'^(?:SCRIPT ERROR|ERROR:)', log, re.M):
                 raise ValueError('Godot failed: ' + ' '.join(command) + '\n' + log[-4000:])
         journey = json.loads((out / 'journey.json').read_text())
+        if platform_journey:
+            platform_report = json.loads((out / 'platform/journey.json').read_text())
+            if not platform_report.get('scenarios') or any(s['status'] != 'passed' for s in platform_report['scenarios']):
+                raise ValueError('platform journey incomplete or failed')
+            journey['scenarios'].extend(platform_report['scenarios'])
+            (out / 'journey.json').write_text(json.dumps(journey, indent=2) + '\n')
         if not journey.get('scenarios') or any(s['status'] != 'passed' for s in journey['scenarios']):
             raise ValueError('journey incomplete or failed')
         covered = {f for s in journey['scenarios'] for f in s['featureIds']}
-        missing = set(gate.REQUIRED + gate.UI_CHECKS) - covered
+        inventory = json.loads((root / 'docs/qa/feature-inventory.json').read_text())
+        missing = (set(gate.REQUIRED + gate.UI_CHECKS) | {f['id'] for f in inventory['features'] if f.get('core')}) - covered
         if missing: raise ValueError('missing feature journeys: ' + str(missing))
         checks = {n: True for n in gate.REQUIRED + gate.UI_CHECKS}
         checks.update({'contract_probe': True, 'bundle_hashes': True, 'architecture': True})

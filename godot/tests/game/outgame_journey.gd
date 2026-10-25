@@ -14,6 +14,7 @@ func text_button(main: Node, value: String) -> Button:
  return null
 func mount_game(path: String, home: String = "") -> Control:
  var main: Control = load(ProjectSettings.get_setting("application/run/main_scene")).instantiate()
+ main.connect_platform = false
  main.state = State.new(path)
  main.device_locale = "en-US"
  if not home.is_empty(): main.home_profile = home
@@ -22,7 +23,7 @@ func mount_game(path: String, home: String = "") -> Control:
  return main
 func run() -> void:
  var args := OS.get_cmdline_user_args()
- var size := arg(args, "--size", "390x844").split("x")
+ var size := arg(args, "--size", "568x320").split("x")
  d = Driver.new(self, Vector2i(int(size[0]), int(size[1])), arg(args, "--out", "user://e2e/game"), args.has("--capture"))
  save_dir = "user://e2e-game-%d" % Time.get_ticks_usec()
  DirAccess.make_dir_recursive_absolute(save_dir)
@@ -37,7 +38,7 @@ func run() -> void:
  d.expect_equal("persisted reward", main.state.data.coins, 10)
  await d.shot("result")
  d.step("return to lobby", await d.tap(b(main, "reward_continue")) and main.screen == "home")
- d.step("unsupported commerce and ranking hidden", b(main, "shop") == null and b(main, "leaderboard") == null)
+ d.step("unsupported commerce and ranking hidden", b(main, "shop").disabled and b(main, "leaderboard") == null)
  await d.shot("home")
  d.step("open inbox", await d.tap(b(main, "inbox")) and main.screen == "inbox")
  await d.shot("inbox")

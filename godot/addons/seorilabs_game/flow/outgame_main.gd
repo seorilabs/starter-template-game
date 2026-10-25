@@ -8,6 +8,10 @@ const Support = preload("res://addons/seorilabs_game/services/support_identity.g
 const Analytics = preload("res://addons/seorilabs_game/services/analytics_preference.gd")
 const Ranking = preload("res://addons/seorilabs_game/services/leaderboard.gd")
 const Commerce = preload("res://addons/seorilabs_game/services/commerce.gd")
+const Accounts = preload("res://addons/seorilabs_game/services/accounts.gd")
+const AccountPanel = preload("res://addons/seorilabs_game/ui/account_panel.gd")
+const CampHome = preload("res://addons/seorilabs_game/ui/camp_home.gd")
+@export var landscape := false
 @export var game_title := "Game"
 @export var game_title_ko := "Game"
 @export var studio_name := "Seorilabs"
@@ -21,6 +25,8 @@ var home_actions: Callable
 var feature_routes: Dictionary = {}
 var home_text := {"hero": ["Player", "플레이어"], "destination": ["Ready to play", "플레이 준비"], "action": ["Play", "플레이"], "account": ["Account", "계정"]}
 var reward_text := ""
+var transient_notice := ""
+var _notice_label: Label
 var state = State.new()
 var services = Services.new()
 var popups = Popups.new()
@@ -28,10 +34,15 @@ var support = Support.new()
 var analytics = Analytics.new()
 var ranking = Ranking.new()
 var commerce = Commerce.new()
+var accounts = Accounts.new()
+var account_changed: Callable
+var gameplay_ready: Callable
+var resource_provider: Callable
 var identity_provider: Callable
 var support_provider: Callable
 var clipboard_writer: Callable
 var content: VBoxContainer
+var _content_margin: MarginContainer
 var backing: Panel
 var background: TextureRect
 var header: Label
@@ -62,7 +73,7 @@ func configure_platform(client: Node, provider: Callable, options: Dictionary) -
 		return
 	if client.get_parent() == null:
 		add_child(client)
-	services.configure(client, provider)
+	services.configure(client, provider, bool(options.get("async_credentials", false)))
 	config.merge(options, true)
 
 func current_identity() -> String:
@@ -85,6 +96,7 @@ func _lookup_support(callback: Callable) -> void:
 		callback.call({"ok": false, "retryable": false})
 
 func _identity_changed(_session: Dictionary = {}) -> void:
+	if accounts.status != "busy": accounts.refresh()
 	support.change_identity(current_identity())
 	ranking.change_identity(current_identity())
 	commerce.change_identity(current_identity())
@@ -104,7 +116,7 @@ func _ready() -> void:
 	base.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(base)
 	background = TextureRect.new()
-	background.texture = lobby_art
+	background.texture = preload("res://addons/seorilabs_game/skins/soft_adventure/camp.svg") if landscape else lobby_art
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -131,6 +143,7 @@ func _ready() -> void:
 	backing.add_theme_stylebox_override("panel", _skin(Color(palette.panel), Color("9b9478"), 18))
 	add_child(backing)
 	var margin := MarginContainer.new()
+	_content_margin = margin
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
 		margin.add_theme_constant_override("margin_" + side, 28 if side in ["left", "right"] else 12 if size.y < 500 else 26)
@@ -140,6 +153,10 @@ func _ready() -> void:
 	content.add_theme_constant_override("separation", 6 if size.y < 500 else 10)
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(content)
+	accounts.changed.connect(_accounts_changed)
+	feature_routes.account_manage = func() -> void: AccountPanel.manage(self)
+	feature_routes.account_recovery = func() -> void: AccountPanel.recovery(self)
+	feature_routes.account_confirmation = func() -> void: AccountPanel.confirm(self)
 	support.changed.connect(_refresh_features)
 	ranking.changed.connect(_refresh_features)
 	commerce.changed.connect(_refresh_features)
@@ -173,7 +190,7 @@ func _skin(color: Color, border: Color, radius: int = 10) -> StyleBoxFlat:
 func _apply_settings() -> void:
 	theme = Theme.new()
 	theme.default_font = _font_body
-	theme.default_font_size = 16 + (3 if state.data.settings.large_text else 0)
+	theme.default_font_size = _ui_font_size(16)
 	_font_title = load("res://addons/seorilabs_game/fonts/Jua.ttf") if language() == "ko" else _variable_font("res://addons/seorilabs_game/fonts/Fredoka.ttf", 650)
 	theme.set_color("font_color", "Label", Color(palette.text))
 	for cls in ["Button", "CheckButton"]:
@@ -190,6 +207,20 @@ func _apply_settings() -> void:
 		var focus := _skin(Color.TRANSPARENT, Color("286778"))
 		focus.set_border_width_all(3)
 		theme.set_stylebox("focus", cls, focus)
+		if landscape:
+			theme.set_font("font", cls, _font_title)
+			for state_name in ["normal", "hover", "pressed", "disabled"]:
+				var fill := Color("ffeec5")
+				if state_name == "pressed": fill = fill.darkened(0.14)
+				elif state_name == "hover": fill = fill.lightened(0.12)
+				elif state_name == "disabled": fill = Color("bdc9bb")
+				var material := _skin(fill, Color("87967a"), 12)
+				material.shadow_color = Color("986c42")
+				material.shadow_size = 2
+				material.shadow_offset = Vector2(0, 3 if state_name != "pressed" else 1)
+				theme.set_stylebox(state_name, cls, material)
+	theme.set_color("font_uneditable_color", "LineEdit", Color(palette.text))
+	theme.set_stylebox("read_only", "LineEdit", _skin(Color("fff8e5"), Color("94b3a6")))
 	for pair in [["Music", "music"], ["SFX", "sfx"]]:
 		var index := AudioServer.get_bus_index(pair[0])
 		if index == -1:
@@ -244,6 +275,9 @@ func _clear(title: String) -> void:
 		content.remove_child(child)
 		child.queue_free()
 	backing.visible = screen not in ["title", "home"]
+	if landscape:
+		for side in ["left", "right", "top", "bottom"]:
+			_content_margin.add_theme_constant_override("margin_" + side, 0 if screen in ["title", "home"] else roundi(16 * _ui_scale()))
 	background.visible = home_profile == "hero" or screen != "home"
 	if screen in ["title", "home"]:
 		return
@@ -254,36 +288,45 @@ func _clear(title: String) -> void:
 	content.add_child(top)
 	var back := _button("‹", _back, top)
 	back.name = "back"
-	back.custom_minimum_size.x = 44
+	back.custom_minimum_size.x = 56 * _ui_scale() if landscape else 44
 	back.size_flags_horizontal = Control.SIZE_FILL
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	top.add_child(header)
 	var close := _button("×", _close, top)
 	close.name = "close"
-	close.custom_minimum_size.x = 44
+	close.custom_minimum_size.x = 56 * _ui_scale() if landscape else 44
 	close.size_flags_horizontal = Control.SIZE_FILL
 
 func _label(text: String, size: int = 16) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.add_theme_font_size_override("font_size", size + (3 if not state.data.is_empty() and state.data.settings.large_text else 0))
+	label.add_theme_font_size_override("font_size", _ui_font_size(size))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
+
+func _ui_scale() -> float:
+	# A 1280x720 canvas is reduced to 568x320 on small landscape screens.
+	# Scale modal controls too, so their 56px targets and 16px text survive that reduction.
+	return maxf(1.0, self.size.y / 320.0) if landscape else 1.0
+
+func _ui_font_size(value: int) -> int:
+	var larger: bool = not state.data.is_empty() and state.data.get("settings", {}).get("large_text", false)
+	return roundi((value + (3 if larger else 0)) * _ui_scale())
 
 func _button(text: String, action: Callable, parent: Node = null, primary: bool = false) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	button.custom_minimum_size.y = 48
+	button.custom_minimum_size.y = 56 * _ui_scale() if landscape else 48
 	button.custom_minimum_size.x = 80
 	button.mouse_filter = Control.MOUSE_FILTER_PASS
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(action)
 	if primary:
 		button.add_theme_font_override("font", _font_title if _font_title != null else _font_body)
-		button.add_theme_font_size_override("font_size", 22)
+		button.add_theme_font_size_override("font_size", _ui_font_size(22))
 		var skin := _skin(Color(palette.primary), Color("aa8036"), 12)
 		skin.shadow_color = Color("8e6425")
 		skin.shadow_size = 2
@@ -301,6 +344,9 @@ func _spacer() -> void:
 func _title() -> void:
 	screen = "title"
 	_clear(game_title)
+	if landscape:
+		_camp_home(true)
+		return
 	var top := HBoxContainer.new()
 	content.add_child(top)
 	var studio := _label(studio_name.to_upper(), 13)
@@ -363,6 +409,7 @@ func _open(target: String) -> void:
 	_route(target)
 
 func _route(target: String) -> void:
+	if target != screen: transient_notice = ""
 	screen = target
 	if feature_routes.has(target):
 		feature_routes[target].call()
@@ -449,6 +496,9 @@ func _home() -> void:
 	_sync_metrics()
 	screen = "home"
 	_clear("")
+	if landscape:
+		_camp_home(false)
+		return
 	if size.y < 500:
 		_compact_home()
 		return
@@ -566,7 +616,7 @@ func _settings_toggles(box: VBoxContainer, pairs: Array) -> void:
 		var toggle := CheckButton.new()
 		toggle.name = key
 		toggle.text = tr_text(pair[1], pair[2])
-		toggle.custom_minimum_size.y = 48
+		toggle.custom_minimum_size.y = 56 * _ui_scale() if landscape else 48
 		toggle.mouse_filter = Control.MOUSE_FILTER_PASS
 		toggle.button_pressed = bool(state.data.settings[key])
 		toggle.toggled.connect(func(value: bool) -> void:
@@ -599,35 +649,92 @@ func _language() -> void:
 		button.name = value
 
 func _account() -> void:
+	if accounts.port != null or landscape:
+		AccountPanel.show_account(self)
+		return
 	_clear(tr_text("Account and save", "계정과 저장"))
 	content.add_child(_label(tr_text("Guest, saved on this device" if services.mode == "local" else "Connected game account", "게스트, 이 기기에 저장" if services.mode == "local" else "연결된 게임 계정")))
 	content.add_child(_label(tr_text("Progress is preserved. Linking is available only when supported by this game.", "진행은 유지됩니다. 계정 연결은 이 게임에서 지원하는 경우에만 제공됩니다.")))
 
+func _camp_home(is_title: bool) -> void:
+	background.visible = false
+	var camp := CampHome.new()
+	camp.controller = self
+	camp.title_screen = is_title
+	camp.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(camp)
+
+func _camp_action() -> void:
+	if not startup_error.is_empty():
+		_initialize()
+	elif services.mode == "server" and not accounts.connected():
+		if accounts.port == null or not accounts.capabilities().get("create", false):
+			_show_error("service_unconnected")
+		else:
+			accounts.perform("create")
+	elif services.mode == "server" and services.sdk != null and services.sdk.is_under_maintenance():
+		_show_error("maintenance")
+	elif services.mode == "server" and services.sdk != null and (services.sdk.is_sdk_blocked() or services.sdk.update_gate_state().get("kind", "ok") == "required"):
+		_show_error("update_required")
+	elif gameplay_ready.is_valid() and not gameplay_ready.call():
+		_show_error("cloud_save_not_ready")
+	elif screen == "title":
+		_start()
+	else:
+		_open("play")
+
+func _accounts_changed() -> void:
+	if accounts.status != "busy":
+		if account_changed.is_valid(): account_changed.call(accounts.details)
+		support.change_identity(current_identity())
+		ranking.change_identity(current_identity())
+		commerce.change_identity(current_identity())
+	if not is_node_ready() or content == null:
+		return
+	if screen == "title": _title()
+	elif screen in ["account", "account_manage", "account_recovery", "account_confirmation"]:
+		_route("account" if accounts.status != "busy" else screen)
+
 func _draw_support() -> void:
 	_clear(tr_text("Support code", "지원코드"))
-	content.add_child(_label(tr_text("Customer support identifier", "고객지원용 식별코드"), 20))
+	var box: VBoxContainer = _scroll() if landscape else content
+	if landscape and accounts.connected():
+		for item in [["uid", "UID"], ["platformUserId", "PUID"]]:
+			var id_value := LineEdit.new()
+			id_value.name = "identity_" + item[0]
+			id_value.editable = false
+			id_value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			id_value.add_theme_color_override("font_uneditable_color", Color("203f44"))
+			id_value.text = str(item[1]) + "  " + str(accounts.details.get(item[0], "—"))
+			id_value.custom_minimum_size.y = 56 * _ui_scale()
+			box.add_child(id_value)
+		_button(tr_text("Copy UID", "UID 복사"), func() -> void:
+			_show_error("copied" if clipboard_writer.call(str(accounts.details.get("uid", ""))) else "copy_failed")
+		, box).name = "copy_uid"
+	box.add_child(_label(tr_text("Customer support identifier", "고객지원용 식별코드"), 20))
 	var value := LineEdit.new()
 	value.name = "support_code"
 	value.editable = false
+	value.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	value.text = support.code if not support.code.is_empty() else tr_text("Checking…", "확인 중…") if support.status == "checking" else "—"
 	value.add_theme_font_override("font", _variable_font("res://addons/seorilabs_game/fonts/NotoSansMono.ttf", 500))
-	value.add_theme_font_size_override("font_size", 21)
+	value.add_theme_font_size_override("font_size", _ui_font_size(21))
 	value.add_theme_color_override("font_uneditable_color", Color(palette.text))
 	value.add_theme_color_override("font_color", Color(palette.text))
 	value.add_theme_stylebox_override("read_only", _skin(Color("fffdf3"), Color("7e9b91")))
-	value.custom_minimum_size.y = 54
-	content.add_child(value)
+	value.custom_minimum_size.y = 56 * _ui_scale() if landscape else 54
+	box.add_child(value)
 	var description := tr_text("An identifier for customer support, not a password.", "고객지원에서 사용하는 식별코드입니다. 비밀번호가 아닙니다.")
 	if support.status == "cached_offline": description = tr_text("Offline, showing your previously confirmed code.", "오프라인입니다. 이전에 확인한 현재 계정의 코드입니다.")
 	elif support.status in ["failed", "unavailable"]: description = tr_text("The code cannot be checked right now. Local play remains available.", "지금 코드를 확인할 수 없습니다. 로컬 플레이는 계속할 수 있습니다.")
-	content.add_child(_label(description))
+	box.add_child(_label(description))
 	var copy := _button(tr_text("Copy code", "코드 복사"), func() -> void:
 		_show_error("copied" if support.copy_code(clipboard_writer) else "copy_failed")
-	, null, true)
+	, box, true)
 	copy.name = "copy"
 	copy.disabled = support.status not in ["ready", "cached_offline"]
 	if support.status in ["failed", "unavailable"]:
-		_button(tr_text("Try again", "다시 확인"), func() -> void: support.request(current_identity(), _lookup_support)).name = "support_retry"
+		_button(tr_text("Try again", "다시 확인"), func() -> void: support.request(current_identity(), _lookup_support), box).name = "support_retry"
 
 func _draw_shop() -> void:
 	_clear(tr_text("Shop", "상점"))
@@ -760,12 +867,23 @@ func _rank_row(row: Dictionary, self_row: bool = false) -> PanelContainer:
 	return card
 
 func _show_error(code: String) -> void:
-	content.add_child(_label(_error_text(code), 14))
+	if landscape and screen in ["title", "home"]:
+		transient_notice = _error_text(code)
+		_route(screen)
+		return
+	if is_instance_valid(_notice_label) and _notice_label.get_parent() == content:
+		_notice_label.text = _error_text(code)
+	else:
+		_notice_label = _label(_error_text(code), 14)
+		content.add_child(_notice_label)
 
 func _error_text(code: String) -> String:
 	match code:
+		"service_unconnected": return tr_text("Account services are unavailable in this build.", "이 빌드에서는 계정 서비스를 지원하지 않습니다.")
+		"expected_uid_required": return tr_text("Enter the UID of the account you want to recover.", "복구할 이전 계정의 UID를 입력해 주세요.")
+		"cloud_save_not_ready", "cloud_save_pending": return tr_text("Wait for cloud saving, then refresh your account.", "클라우드 저장을 기다린 뒤 계정을 다시 확인해 주세요.")
 		"copied": return tr_text("Code copied", "코드를 복사했어요")
-		"copy_failed": return tr_text("Copy failed. Select the code to copy it.", "복사하지 못했습니다. 코드를 선택해 복사해 주세요.")
+		"copy_failed": return tr_text("Copy failed. Please try the Copy button again.", "복사하지 못했습니다. 복사 버튼을 다시 눌러 주세요.")
 		"save_failed": return tr_text("Could not save. Try again.", "저장하지 못했습니다. 다시 시도해 주세요.")
 		"save_corrupt", "save_schema_invalid": return tr_text("The save could not be read. Your data was preserved.", "저장을 읽지 못했습니다. 기존 데이터는 보존했습니다.")
 		"save_newer_version": return tr_text("Update the game to open this save.", "이 저장을 열려면 게임을 업데이트해 주세요.")
@@ -837,11 +955,12 @@ func _render_mail() -> void:
 		var claim := _button(tr_text("Received", "수령 완료") if mail.claimedAt != 0 else (tr_text("Expired", "만료됨") if expired else tr_text("Claim", "받기")), func() -> void: _claim(str(mail.id)), card)
 		claim.disabled = pending or mail.claimedAt != 0 or expired
 	if services.mode == "server" and not services.cursor.is_empty():
-		_button(tr_text("More messages", "더 보기"), func() -> void: _inbox(true))
-	var all := _button(tr_text("Claim all available", "받을 수 있는 우편 모두 받기"), _claim_all)
+		_button(tr_text("More messages", "더 보기"), func() -> void: _inbox(true), box)
+	var all := _button(tr_text("Claim all available", "받을 수 있는 우편 모두 받기"), _claim_all, box)
 	all.disabled = pending or _unclaimed() == 0
-	_button(tr_text("Grant history", "지급 내역"), _history)
-	_button(tr_text("Back", "뒤로"), _back)
+	box.move_child(all, 0)
+	var history := _button(tr_text("Grant history", "지급 내역"), _history, box)
+	box.move_child(history, 1)
 
 func _read(id: String) -> void:
 	if services.mode == "server":

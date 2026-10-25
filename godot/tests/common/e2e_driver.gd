@@ -157,7 +157,8 @@ func scroll_into_view(control: Control, max_drags := 30) -> bool:
 func shot(name: String) -> void:
 	if not capture:
 		return
-	await RenderingServer.frame_post_draw
+	# Draw this offscreen viewport even when macOS pauses an occluded window.
+	RenderingServer.force_draw(false)
 	var path := out_dir.path_join("%s.png" % name)
 	viewport.get_texture().get_image().save_png(path)
 	_current.screenshots.append(path.get_file())

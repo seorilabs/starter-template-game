@@ -67,8 +67,8 @@ def pack(root, commit, out):
         payload[name] = git(root, 'cat-file', 'blob', oid)
     lock = {'schemaVersion': 1, 'version': '1.0.0', 'roots': list(ROOTS),
             'source': {'repository': REPOSITORY, 'commit': commit},
-            'sdk': {'version': '1.0.0', 'archiveSha256': '6a9be1f06fca92462e41fb82afb112672f83003887f15dc2fc239681285a2e13',
-                    'source': 'https://github.com/seorilabs/platform/releases/tag/v1.0.0'},
+            'sdk': {'version': '1.1.0', 'archiveSha256': '77a1dd4ce627f93f9bbe716924202c3c93c047f3cf4bdd59c05294cbc950ec5c',
+                    'source': 'https://github.com/seorilabs/platform/releases/tag/v1.1.0'},
             'files': {name: sha(data) for name, data in sorted(payload.items())}}
     validate_manifest(lock)
     # Exclusive creation avoids replacing a reviewed or user-owned bundle.

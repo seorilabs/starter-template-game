@@ -127,6 +127,34 @@
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
       ]
+    },
+    {
+      "id": "ui_landscape",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/ui/**",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/game/features/**"
+      ]
+    },
+    {
+      "id": "platform_end_to_end",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/game/adapters/**",
+        "firebase/**",
+        "native/**"
+      ],
+      "platformPaths": [
+        "godot/game/adapters/native_identity.gd",
+        "godot/game/adapters/android_play_billing_market.gd",
+        "godot/game/adapters/ios_storekit_market.gd",
+        "godot/addons/seori_account_link/**",
+        "godot/addons/GodotGooglePlayBilling/**",
+        "native/**"
+      ]
     }
   ]
 }
