@@ -3,7 +3,7 @@
 Godot 4.7.2와 Python 3.11 이상이 설치돼 있으면 복제 후 네트워크나 개인 스킬 없이 실행한다.
 
 ```sh
-godot --path godot
+npm start
 npm test
 npm run init:game -- --name "Orbit Stars" --id com.example.orbit --home hero
 ```

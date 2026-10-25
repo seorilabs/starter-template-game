@@ -17,6 +17,7 @@
     "check:platform-switch": "python3 tools/check_local_mode.py",
     "check:release": "bash scripts/check_release_readiness.sh",
     "init:game": "python3 tools/init_game.py",
-    "build:godot:web": "bash tools/ensure_godot.sh --with-export-templates && bash scripts/export_godot_web.sh"
+    "build:godot:web": "bash tools/ensure_godot.sh --with-export-templates && bash scripts/export_godot_web.sh",
+    "start": "python3 tools/run.py"
   }
 }
