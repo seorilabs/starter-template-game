@@ -42,6 +42,7 @@ jobs:
       godot_version: '4.7.2'
       project_dir: godot
       scripts_dir: tools
+      prepare_project_script: tools/prepare_android.sh
     secrets:
       GOOGLE_PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.GOOGLE_PLAY_UPLOAD_KEYSTORE_BASE64 }}
       GOOGLE_PLAY_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_UPLOAD_KEYSTORE_PASSWORD }}

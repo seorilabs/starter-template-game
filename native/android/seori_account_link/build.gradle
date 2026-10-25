@@ -1,0 +1,32 @@
+// Godot Android 플러그인(v2). 계정 연결(ADR 0030)에 필요한 두 가지를 준다:
+// Credential Manager 의 Google ID token, Play Integrity Firebase App Check token.
+// AAR 은 scripts/build_account_link_plugin.sh 가 addons/seori_account_link/bin 으로 복사한다.
+plugins {
+    id 'com.android.library' version '8.6.1'
+    id 'org.jetbrains.kotlin.android' version '2.1.21'
+}
+
+android {
+    namespace 'com.seorilabs.accountlink'
+    compileSdk 36
+    defaultConfig {
+        minSdk 24
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    // 앱 쪽 Godot 런타임이 제공한다. 버전은 .godot-version 과 같다.
+    compileOnly 'org.godotengine:godot:4.7.2.stable'
+    // 실제 런타임 의존성은 export_plugin.gd 의 _get_android_dependencies 가 앱 Gradle 에 넣는다.
+    compileOnly 'androidx.credentials:credentials:1.5.0'
+    compileOnly 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
+    compileOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+    compileOnly 'com.google.firebase:firebase-appcheck-playintegrity:19.4.1'
+}

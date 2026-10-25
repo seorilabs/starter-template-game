@@ -28,6 +28,7 @@ def main():
         for name in ['GODOT_ANDROID_KEYSTORE_RELEASE_PATH','GODOT_ANDROID_KEYSTORE_RELEASE_USER','GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD']:
             if not os.environ.get(name):raise ValueError('Missing signing environment variable: '+name)
         subprocess.run(['bash',str(ROOT/'tools/install_android_build_template.sh')],cwd=ROOT,check=True)
+    subprocess.run(['bash',str(ROOT/'tools'/('prepare_android.sh' if args.platform=='Android' else 'prepare_ios.sh'))],cwd=ROOT,check=True)
     godot=os.environ.get('GODOT','godot')
     run([godot,'--headless','--path',str(ROOT/'godot'),'--import'],180)
     output=ROOT/('build/android/starter-template-game.aab' if args.platform=='Android' else 'build/ios/startergame.xcodeproj')

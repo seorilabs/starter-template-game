@@ -76,3 +76,11 @@ apps/ait/public/
 
 # Generated native export projects and SDK build cache.
 godot/android/
+godot/ios/plugins/
+godot/addons/seori_account_link/bin/
+godot/addons/GodotGooglePlayBilling/bin/
+native/android/seori_account_link/.gradle/
+native/android/seori_account_link/build/
+native/android/seori_account_link/local.properties
+godot/addons/admob/android/bin/
+godot/addons/admob/ios/bin/
