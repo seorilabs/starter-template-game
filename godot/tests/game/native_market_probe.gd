@@ -48,6 +48,12 @@ func _run() -> void:
 	market.start_purchase("google_play", "ticket", {"googlePlayObfuscatedAccountId": "synthetic"}, func(_r: Dictionary): pass)
 	check(bridge.queries == ["ticket", "badge", "ticket"] and bridge.launches == ["ticket"], "purchase refreshes the selected native ProductDetails")
 	bridge.on_purchase_updated.emit({"response_code": 1})
+	var interrupted: Array[Dictionary] = []
+	market.start_purchase("google_play", "badge", {"googlePlayObfuscatedAccountId": "synthetic"}, func(r: Dictionary): interrupted.append(r))
+	bridge.disconnected.emit()
+	check(interrupted.size() == 1 and not interrupted[0].ok and not market._purchase_callback.is_valid(), "disconnected active purchase completes as unavailable and releases its callback for explicit restore")
+	bridge.launches.clear()
+	bridge.launches.append("ticket")
 	bridge.connection_ready = false
 	var failed: Array[Dictionary] = []
 	market.request_localized_price("google_play", "uncached", func(r: Dictionary): failed.append(r))

@@ -528,6 +528,7 @@ func _on_connect_error(response_code: int, _debug_message: String) -> void:
 		var callback: Callable = request.get("callback", Callable())
 		if callback.is_valid(): callback.call(response.duplicate(true))
 	if owned.is_valid(): owned.call(response.duplicate(true))
+	if _purchase_callback.is_valid(): _finish_purchase(response)
 
 
 func _bridge_is_ready() -> bool:
