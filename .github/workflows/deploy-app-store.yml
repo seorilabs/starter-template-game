@@ -1,0 +1,60 @@
+name: Deploy App Store Internal
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        type: string
+        required: true
+      upload:
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        required: true
+      upload:
+        type: boolean
+        default: false
+    secrets:
+      APPLE_DISTRIBUTION_CERTIFICATE_BASE64:
+        required: false
+      APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD:
+        required: false
+      APPLE_KEYCHAIN_PASSWORD:
+        required: false
+      APPLE_PROVISIONING_PROFILE_BASE64:
+        required: true
+      APP_STORE_CONNECT_API_KEY_ID:
+        required: false
+      APP_STORE_CONNECT_ISSUER_ID:
+        required: false
+      APP_STORE_CONNECT_PRIVATE_KEY_BASE64:
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ inputs.release_tag }}
+  cancel-in-progress: false
+jobs:
+  app-store:
+    uses: seorilabs/.github/.github/workflows/godot-deploy-app-store.yml@main
+    with:
+      release_tag: ${{ inputs.release_tag }}
+      bundle_id: com.seorilabs.startergame
+      upload: ${{ inputs.upload }}
+      godot_version: '4.7.2'
+      project_dir: godot
+      scripts_dir: tools
+      ios_export_preset: iOS
+      xcode_project_path: build/ios/startergame.xcodeproj
+      export_options_plist: app-store/exportOptions.plist
+      post_export_project_script: tools/prepare_ios_project.sh
+    secrets:
+      APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+      APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+      APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+      APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}

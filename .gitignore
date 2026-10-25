@@ -73,3 +73,6 @@ ui-debug.log
 **/*.import
 godot/build/
 apps/ait/public/
+
+# Generated native export projects and SDK build cache.
+godot/android/

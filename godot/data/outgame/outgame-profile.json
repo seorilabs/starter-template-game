@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "gameId": "sample-game",
+  "gameId": "com.seorilabs.startergame",
   "mode": "local",
   "newGame": true,
   "features": {

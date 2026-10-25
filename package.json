@@ -7,7 +7,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "test": "python3 -m unittest discover -s tools -p 'test_*.py' -v && python3 tools/check.py",
+    "test": "python3 -m unittest discover -s tools -p 'test_*.py' -v && python3 tools/check_native.py && python3 tools/check.py",
     "test:e2e": "python3 tools/check.py",
     "test:core": "godot --headless --path godot --script res://tests/game/core_probe.gd",
     "test:godot": "python3 tools/check.py",
@@ -18,6 +18,9 @@
     "check:release": "bash scripts/check_release_readiness.sh",
     "init:game": "python3 tools/init_game.py",
     "build:godot:web": "bash tools/ensure_godot.sh --with-export-templates && bash scripts/export_godot_web.sh",
-    "start": "python3 tools/run.py"
+    "start": "python3 tools/run.py",
+    "check:native": "python3 tools/check_native.py",
+    "build:android": "python3 tools/export_native.py Android",
+    "build:ios": "python3 tools/export_native.py iOS"
   }
 }
