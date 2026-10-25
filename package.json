@@ -7,13 +7,16 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "build:godot:web": "bash scripts/ensure_godot.sh --with-export-templates && bash scripts/export_godot_web.sh",
-    "test": "npm run test:core && npm run check:architecture && npm run check:platform-switch && npm run test:godot && npm run check:docs",
-    "test:core": "bash scripts/test_core.sh",
-    "test:godot": "bash scripts/godot_quality_gate.sh --project godot --smoke-scene res://tests/test_runner.tscn",
-    "check:architecture": "bash scripts/check_architecture.sh",
+    "test": "python3 -m unittest discover -s tools -p 'test_*.py' -v && python3 tools/check.py",
+    "test:e2e": "python3 tools/check.py",
+    "test:core": "godot --headless --path godot --script res://tests/game/core_probe.gd",
+    "test:godot": "python3 tools/check.py",
+    "check:architecture": "python3 tools/check_architecture.py",
+    "check:bundle": "python3 tools/bundle.py verify",
     "check:docs": "bash scripts/check_docs.sh",
+    "check:platform-switch": "python3 tools/check_local_mode.py",
     "check:release": "bash scripts/check_release_readiness.sh",
-    "check:platform-switch": "bash scripts/check_platform_switch.sh"
+    "init:game": "python3 tools/init_game.py",
+    "build:godot:web": "bash tools/ensure_godot.sh --with-export-templates && bash scripts/export_godot_web.sh"
   }
 }
