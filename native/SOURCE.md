@@ -10,10 +10,12 @@ StoreKit 2 source uses the `seorilabs/lizard-tycoon` fork at `3044aa8916b4da369d
 
 Google Play Billing uses official `godot-sdk-integrations/godot-google-play-billing` 3.3.0 with Billing Library 9.1.0. The release archive SHA-256 is `20d75623d6f337f08d8283c83098b73678d5f575e39247af5a8eb80588b18568`. Wrapper source and its MIT license are retained; native binaries are fetched from this verified archive during build preparation.
 
-광고는 Poing Studios AdMob 5.1.0 정식 배포본을 고정한다. GDScript 원본과 각 플랫폼의 Godot 4.7.2 native template 해시는 `dependencies.lock.json`에 있다. 미디에이션 사업자용 native binary는 설치하지 않는다. 개발 검수는 명시적인 경계 대역을 주입하므로 upstream의 자동 Editor mock 생성만 제거했다. 이 변경 파일과 이유를 잠금 파일에 기록하며 테스트 대역과 C# 예제는 출시 내보내기에서 제외한다.
+광고는 Poing Studios AdMob 5.1.0 정식 배포본을 고정한다. GDScript 원본과 각 플랫폼의 Godot 4.7.2 native template 해시는 `dependencies.lock.json`에 있다. 미디에이션 사업자용 native binary는 설치하지 않는다. 개발 검수는 명시적인 경계 대역을 주입하므로 upstream의 자동 Editor mock 생성을 제거했다. 새 복제본을 import할 때 네이티브 SDK를 자동으로 내려받는 동작도 제거하고, 고정 해시를 검증하는 저장소 준비 명령에서만 설치한다. 이 변경 파일과 이유를 잠금 파일에 기록하며 테스트 대역과 C# 예제는 출시 내보내기에서 제외한다.
 
 iOS에서는 추적 허용 창을 요청하지 않고, 광고 초기화 전 이 앱에 남은 IAB 광고 선택 값을 정리하며 비개인화 요청을 사용한다. Android는 Google UMP의 실제 선택 결과를 확인한다. 광고 시청 callback은 지급 근거가 아니며 서버 SSV 확인과 영속 기록 후에 수령을 확인한다.
 
 `tools/prepare_android.sh`와 `tools/prepare_ios.sh`가 복제한 저장소만으로 native SDK를 준비한다. iOS generic SDK용 컴파일은 기기나 시뮬레이터 실행 근거가 아니다. 런타임 연동과 UI는 별도 통합 검수에서 확인한다.
+
+호출하지 않는 upstream `binary_installer.gd`는 검수한 공급자 배포본의 출처 대조를 위해 보존한다. 편집기 진입점에서 참조하지 않으며, 공급자 업데이트에서 해당 자동 설치 기능 자체가 제거되면 함께 정리한다. 잠금 파일 스키마 2의 `localPatches` 해시는 `check_native.py`에서 실제 파일과 대조한다.
 
 AdMob Editor의 Noto Sans CJK SC는 Adobe의 2014–2021 저작권과 SIL OFL 1.1을 보존한다. 같은 폴더의 `OFL.txt`와 잠금 파일에 원본 해시 및 라이선스 출처를 기록한다. Editor 전용 그림, 음악과 이 폰트는 출시 내보내기에서 제외한다.
