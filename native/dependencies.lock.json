@@ -38,11 +38,6 @@
       "sourceArchiveSha256": "8c53ff52719edf6a81cc7d32a9cdaad2d9e11693c85faca25008a1c19355726f",
       "androidTemplateSha256": "f7fdf644d50c0e231d8f02ae044057e489d0bcafcf50e908a4858477e7ee05ee",
       "iosTemplateSha256": "6e7f1c807761f9c0ad45d335ac4c74acd4bba7a31f9e1c7cd16a5220010cce71",
-      "localPatch": {
-        "file": "godot/addons/admob/gdscript/src/core/MobileSingletonPlugin.gd",
-        "reason": "Explicit development boundaries replace implicit editor mock singleton creation",
-        "sha256": "736758df98ba34a89b8ad93bff66602846791106b42deb94e128ac553bd03212"
-      },
       "editorFont": {
         "name": "Noto Sans CJK SC",
         "copyright": "2014-2021 Adobe",
@@ -50,7 +45,19 @@
         "license": "SIL OFL 1.1",
         "licenseSource": "https://raw.githubusercontent.com/google/fonts/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc/OFL.txt",
         "licenseSha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
-      }
+      },
+      "localPatches": [
+        {
+          "file": "godot/addons/admob/gdscript/src/core/MobileSingletonPlugin.gd",
+          "reason": "Explicit development boundaries replace implicit editor mock singleton creation",
+          "sha256": "736758df98ba34a89b8ad93bff66602846791106b42deb94e128ac553bd03212"
+        },
+        {
+          "file": "godot/addons/admob/admob.gd",
+          "reason": "Fresh imports never download native binaries; explicit preparation verifies pinned archives",
+          "sha256": "46bdbd98dab2316763337f8b0b1cb2785336565dc2d8f837949ec055615f8630"
+        }
+      ]
     }
   },
   "licenses": {

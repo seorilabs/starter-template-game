@@ -26,7 +26,6 @@ extends EditorPlugin
 const MENU_NAME := "AdMob Manager"
 const AdMobEditorMenu := preload("res://addons/admob/internal/editor/editor_menu.gd")
 const CSharpService := preload("res://addons/admob/internal/services/csharp_service.gd")
-const BinaryInstaller := preload("res://addons/admob/internal/services/network/binary_installer.gd")
 const ProjectSettingsService := preload(
 	"res://addons/admob/internal/services/project_settings_service.gd"
 )
@@ -38,7 +37,7 @@ var _ios_exporter := preload("res://addons/admob/internal/exporters/ios/export_p
 
 func _enter_tree() -> void:
 	CSharpService.manage_visibility(self)
-	BinaryInstaller.install_missing_binaries_sync()
+	# Native binaries are prepared explicitly by repository tools with pinned hashes.
 	ProjectSettingsService.register_settings()
 
 	add_export_plugin(_main_exporter)
