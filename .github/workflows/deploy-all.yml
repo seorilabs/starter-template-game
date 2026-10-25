@@ -32,13 +32,13 @@ concurrency:
 jobs:
   resolve:
     name: Resolve release tag
-    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.repository.private && 'seorilabs-x64' || 'ubuntu-latest' }}
     timeout-minutes: 10
     outputs:
       tag: ${{ steps.t.outputs.tag }}
       version_name: ${{ steps.t.outputs.version_name }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true

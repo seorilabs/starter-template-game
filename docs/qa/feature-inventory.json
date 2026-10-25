@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 2,
+  "e2e": {
+    "workflow": ".github/workflows/godot-checks.yml",
+    "command": "npm test"
+  },
+  "features": [
+    {
+      "id": "startup",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "tutorial",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "account_save",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "settings_support",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "inbox",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "commerce",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "observability",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "operations",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "ui_support_entry",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "ui_analytics_opt_out",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "ui_locale_offline",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "ui_navigation",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    },
+    {
+      "id": "ui_leaderboard",
+      "core": true,
+      "foundation": false,
+      "paths": [
+        "godot/addons/seorilabs_game/**",
+        "godot/game/**"
+      ],
+      "platformPaths": []
+    }
+  ]
+}

@@ -1,6 +1,0 @@
-{
-  "_comment": "공통 플랫폼 전환 스위치. 신규 앱은 꺼진 상태로 시작한다. 붙일 준비가 되면 baseUrl을 채우고 enabled를 true로 바꾼다.",
-  "enabled": false,
-  "baseUrl": "",
-  "appId": ""
-}

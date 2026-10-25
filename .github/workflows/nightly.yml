@@ -20,7 +20,7 @@ concurrency:
 jobs:
   preflight:
     name: Skip if no new commits
-    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.repository.private && 'seorilabs-x64' || 'ubuntu-latest' }}
     timeout-minutes: 10
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
       changed: ${{ steps.check.outputs.changed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -59,13 +59,13 @@ jobs:
     name: Advance nightly marker
     needs: [preflight, ait]
     if: ${{ needs.preflight.outputs.changed == 'true' && needs.ait.result == 'success' }}
-    runs-on: ${{ github.event.repository.private && 'seorilabs-rpi-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.repository.private && 'seorilabs-x64' || 'ubuntu-latest' }}
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true

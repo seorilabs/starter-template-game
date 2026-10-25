@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "gameId": "sample-game",
+  "mode": "local",
+  "newGame": true,
+  "features": {
+    "startup": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd",
+        "godot/tests/common/outgame_contract_probe.gd"
+      ]
+    },
+    "tutorial": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "account_save": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "settings_support": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "inbox": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "commerce": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "observability": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    },
+    "operations": {
+      "implemented": true,
+      "bindings": [
+        "godot/project.godot",
+        "godot/game/bootstrap/main.tscn",
+        "godot/addons/seorilabs_game/flow/outgame_main.gd",
+        "godot/tests/game/outgame_journey.gd",
+        "godot/addons/seorilabs_game/flow/state.gd",
+        "godot/addons/seorilabs_game/services/services.gd",
+        "godot/addons/seorilabs_game/flow/popup_queue.gd",
+        "godot/addons/seorilabs_platform/platform_client.gd",
+        "godot/addons/seorilabs_platform/core/atomic_json_store.gd"
+      ]
+    }
+  },
+  "optional": {
+    "attendance": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "missions": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "achievements": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "events": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "shop": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "pass": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "ranking": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "friends": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "guild": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "push": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    },
+    "review": {
+      "enabled": false,
+      "reason": "핵심 체험에 필요하지 않아 기본 미채택"
+    }
+  },
+  "services": {
+    "auth": {
+      "status": "unsupported",
+      "exposed": false,
+      "binding": ""
+    },
+    "payments": {
+      "status": "unsupported",
+      "exposed": false,
+      "binding": ""
+    },
+    "ads": {
+      "status": "unsupported",
+      "exposed": false,
+      "binding": ""
+    },
+    "analytics": {
+      "status": "local",
+      "exposed": true,
+      "binding": "godot/addons/seorilabs_game/flow/state.gd"
+    },
+    "remote_config": {
+      "status": "local",
+      "exposed": false,
+      "binding": "godot/addons/seorilabs_game/services/services.gd"
+    },
+    "mailbox": {
+      "status": "local",
+      "exposed": true,
+      "binding": "godot/addons/seorilabs_game/flow/state.gd"
+    }
+  },
+  "tutorial": {
+    "version": 1,
+    "actions": [
+      "target_hit",
+      "reward_collected"
+    ],
+    "rewardKey": "tutorial-first"
+  },
+  "bmProfile": "",
+  "evidence": {},
+  "verification": {
+    "runner": "tools/check.py"
+  },
+  "adoptedMarkets": [],
+  "uiStandard": {
+    "version": "1.0.0",
+    "homeProfile": "hero",
+    "skin": "soft-adventure",
+    "locales": [
+      "en",
+      "ko"
+    ],
+    "support": {
+      "binding": "godot/addons/seorilabs_game/services/support_identity.gd",
+      "entrypoint": "settings.support"
+    },
+    "analytics": {
+      "binding": "godot/addons/seorilabs_game/services/analytics_preference.gd"
+    },
+    "leaderboard": {
+      "binding": "godot/addons/seorilabs_game/services/leaderboard.gd",
+      "enabled": false,
+      "provider": "none",
+      "presentation": "provider",
+      "dataScope": "provider-specific"
+    },
+    "resources": [
+      "godot/game/adapters/local_progress.gd",
+      "godot/game/assets/background.svg",
+      "godot/game/bootstrap/main.gd",
+      "godot/game/bootstrap/main.tscn",
+      "godot/game/core/domain/round_rules.gd",
+      "godot/game/core/ports/progress_port.gd",
+      "godot/game/core/use_cases/record_hit.gd",
+      "godot/game/features/home/home.gd",
+      "godot/game/features/sample_round/assets/star.svg",
+      "godot/game/features/sample_round/sample_round.gd",
+      "godot/game/features/sample_round/sample_round.tscn",
+      "godot/config/product.json",
+      "godot/config/runtime.json",
+      "godot/project.godot"
+    ],
+    "bundleLock": "common-bundle.lock.json"
+  }
+}
