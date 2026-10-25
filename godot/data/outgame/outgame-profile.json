@@ -209,7 +209,10 @@
   "verification": {
     "runner": "tools/check.py"
   },
-  "adoptedMarkets": [],
+  "adoptedMarkets": [
+    "google_play",
+    "app_store"
+  ],
   "uiStandard": {
     "version": "1.0.0",
     "homeProfile": "hero",

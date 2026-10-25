@@ -4,7 +4,6 @@
   "sku": "seorilabs-starter-game",
   "teamId": "HCDUXX4Z3X",
   "primaryLocale": "en-US",
-  "archivePath": "release-artifacts/ios/startergame.xcarchive",
   "testFlight": {
     "internalOnly": true,
     "groupName": "Internal Testers",
