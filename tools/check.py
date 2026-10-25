@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 import bundle
 import check_architecture
@@ -26,13 +27,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
     p.add_argument('--project', default='godot')
-    p.add_argument('--out', type=Path, default=Path('build/e2e'))
+    p.add_argument('--out', type=Path)
     p.add_argument('--capture', action='store_true')
     p.add_argument('--size', default='390x844')
     a = p.parse_args()
     root = a.root.resolve(); project = (root / a.project).resolve()
     if not project.is_relative_to(root): p.error('project must be inside repository')
-    out = a.out.resolve() if a.out.is_absolute() else (root / a.out).resolve()
+    output = a.out or Path('build/e2e') / uuid.uuid4().hex
+    out = output.resolve() if output.is_absolute() else (root / output).resolve()
     if not out.is_relative_to(root / 'build'): p.error('output must be under repository build/')
     if out.exists() and any(out.iterdir()): p.error('output must be new or empty')
     out.mkdir(parents=True, exist_ok=True)
@@ -91,9 +93,11 @@ def main():
         print(json.dumps({'ok': True, 'sourceSha': head, 'scenarios': len(journey['scenarios']), 'output': str(out)}))
     finally:
         if before != snapshot(root):
-            raise ValueError('verification changed tracked source files')
+            active = sys.exception()
+            if active is not None: active.add_note('verification changed tracked source files')
+            else: raise ValueError('verification changed tracked source files')
 
 if __name__ == '__main__':
     try: main()
     except (ValueError, OSError, subprocess.SubprocessError) as error:
-        sys.exit(str(error))
+        sys.exit('\n'.join([str(error), *getattr(error, '__notes__', [])]))
