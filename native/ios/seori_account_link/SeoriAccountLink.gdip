@@ -1,0 +1,20 @@
+[config]
+name="SeoriAccountLink"
+binary="SeoriAccountLink.xcframework"
+
+initialization="register_seori_account_link_types"
+deinitialization="unregister_seori_account_link_types"
+
+[dependencies]
+; Firebase App Check 12.16.0 static frameworks (same release as the Godotx Firebase core plugin).
+linked=["FirebaseAppCheck.xcframework", "AppCheckCore.xcframework", "FirebaseAppCheckInterop.xcframework", "RecaptchaInterop.xcframework", "Promises.xcframework"]
+embedded=[]
+system=["AuthenticationServices.framework", "DeviceCheck.framework", "UIKit.framework", "Foundation.framework"]
+
+capabilities=[]
+
+files=[]
+
+linker_flags=[]
+
+[plist]
