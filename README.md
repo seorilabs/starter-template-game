@@ -17,3 +17,5 @@ npm run init:game -- --name "Orbit Stars" --id com.example.orbit --home hero
 `npm test`는 공통 계약과 실제 입력, 저장 복원을 실행하고 추적 파일을 바꾸지 않는다. `python3 tools/check.py --capture --size 320x568 --out build/review-320`으로 실제 렌더를 검사한다. 대역은 export에서 제외한다. 개발 실행, 기기, 실제 결제와 마켓 검증을 구분한다. 미실행은 통과가 아니다.
 
 기본 CI는 검사만 실행한다. Pages와 마켓 workflow는 수동이다. 이 템플릿 전환은 release null이며 PR 병합까지다. 제품 실행 계획과 마켓 승인이 확정되기 전 배포하지 않는다. Seorilabs PR은 최신 중앙 리뷰 정책을 적용하고 한국어 Ready로 작성한다. 사용자 작업은 보존한다.
+
+첫 실행은 `python3 tools/run.py`로도 할 수 있습니다. `npm start`와 `npm test` 명령에는 Node.js 24가 필요합니다. 자원 준비는 네트워크를 사용하지 않으며 생성 캐시는 Git에 넣지 않습니다.
