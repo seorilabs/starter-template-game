@@ -16,4 +16,6 @@ iOS에서는 추적 허용 창을 요청하지 않고, 광고 초기화 전 이 
 
 `tools/prepare_android.sh`와 `tools/prepare_ios.sh`가 복제한 저장소만으로 native SDK를 준비한다. iOS generic SDK용 컴파일은 기기나 시뮬레이터 실행 근거가 아니다. 런타임 연동과 UI는 별도 통합 검수에서 확인한다.
 
+호출하지 않는 upstream `binary_installer.gd`는 검수한 공급자 배포본의 출처 대조를 위해 보존한다. 편집기 진입점에서 참조하지 않으며, 공급자 업데이트에서 해당 자동 설치 기능 자체가 제거되면 함께 정리한다. 잠금 파일 스키마 2의 `localPatches` 해시는 `check_native.py`에서 실제 파일과 대조한다.
+
 AdMob Editor의 Noto Sans CJK SC는 Adobe의 2014–2021 저작권과 SIL OFL 1.1을 보존한다. 같은 폴더의 `OFL.txt`와 잠금 파일에 원본 해시 및 라이선스 출처를 기록한다. Editor 전용 그림, 음악과 이 폰트는 출시 내보내기에서 제외한다.

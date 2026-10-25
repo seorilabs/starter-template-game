@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate native export identity, signing boundaries and release resource exclusions."""
 import configparser
+import hashlib
 import json
 from pathlib import Path
 import plistlib
@@ -16,6 +17,15 @@ def value(cfg,section,key):
     except (ValueError,configparser.Error):return None
 def validate(root):
     errors=[];cfg=load_presets(root)
+    try:
+        lock=json.loads((root/'native/dependencies.lock.json').read_text())
+        if lock.get('schemaVersion')!=2:errors.append('Unsupported native dependency lock schema')
+        for entry in lock['sources']['admob']['localPatches']:
+            path=root/entry['file']
+            if hashlib.sha256(path.read_bytes()).hexdigest()!=entry['sha256']:
+                errors.append('Native source patch hash mismatch: '+entry['file'])
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        errors.append('Invalid native dependency lock: '+type(error).__name__)
     project=configparser.ConfigParser(interpolation=None);project.optionxform=str;project.read_string('[general]\n'+(root/'godot/project.godot').read_text())
     if value(project,'rendering','textures/vram_compression/import_etc2_astc') is not True:errors.append('Mobile texture import must be enabled for native exports')
     try:

@@ -10,9 +10,14 @@ class NativeExportTests(unittest.TestCase):
         self.assertEqual([],check_native.validate(ROOT))
     def clone_config(self,folder):
         root=Path(folder)
-        for name in ['godot/project.godot','godot/export_presets.cfg','godot/config/product.json','play-store/google-play.config.json','app-store/app-store.config.json','app-store/exportOptions.plist']:
+        patches=json.loads((ROOT/'native/dependencies.lock.json').read_text())['sources']['admob']['localPatches']
+        for name in ['native/dependencies.lock.json','godot/project.godot','godot/export_presets.cfg','godot/config/product.json','play-store/google-play.config.json','app-store/app-store.config.json','app-store/exportOptions.plist',*[entry['file'] for entry in patches]]:
             target=root/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target)
         return root
+    def test_changed_vendor_patch_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=self.clone_config(folder);p=root/'godot/addons/admob/admob.gd';p.write_text(p.read_text()+'\n# changed\n')
+            self.assertIn('Native source patch hash mismatch: godot/addons/admob/admob.gd',check_native.validate(root))
     def test_mismatched_store_identity_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root=self.clone_config(folder);p=root/'play-store/google-play.config.json';data=json.loads(p.read_text());data['packageName']='com.other.wrong';p.write_text(json.dumps(data))
