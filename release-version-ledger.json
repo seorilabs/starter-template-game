@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "lastTag": null,
+    "lastSourceSha": null,
+    "marketingVersion": null
+  },
+  "android": {
+    "authority": "github-ledger",
+    "lastVersionCode": 0,
+    "legacyFallbackSealed": false
+  },
+  "ios": {
+    "authority": "xcode-cloud",
+    "lastObservedBuildNumber": null,
+    "lastObservedTag": null
+  },
+  "provenance": {
+    "initializedAt": "2026-10-25T04:00:45Z",
+    "initializedBy": "release-version-ledger-init-v1",
+    "initializedFromWorkflowSha": "a43f2c401855f23171a4a759beb277950928505e",
+    "authorityRevision": "26721fdbf3cdde6da01b8af05f7d867bfe71a40e7180f1bc1f6c903df4aa9422",
+    "baseline": {
+      "androidVersionCode": 0,
+      "rule": "max-of-verified-sources",
+      "sources": [
+        {
+          "kind": "no-prior-release",
+          "androidVersionCode": 0
+        }
+      ]
+    }
+  }
+}
