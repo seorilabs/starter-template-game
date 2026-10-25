@@ -17,5 +17,5 @@ jobs:
       runs_on: ${{ github.event.repository.private && 'seorilabs-x64' || 'ubuntu-latest' }}
       godot_version: '4.7.2'
       project_dir: godot
-      check_command: npm test && xvfb-run -a python3 tools/check.py --capture --size 320x568
+      check_command: npm test && xvfb-run -a python3 tools/check.py --capture --size 568x320
       e2e_report_path: build/e2e

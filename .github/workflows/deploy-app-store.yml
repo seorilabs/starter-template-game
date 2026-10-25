@@ -46,6 +46,7 @@ jobs:
       godot_version: '4.7.2'
       project_dir: godot
       scripts_dir: tools
+      prepare_project_script: tools/prepare_ios.sh
       ios_export_preset: iOS
       xcode_project_path: build/ios/startergame.xcodeproj
       export_options_plist: app-store/exportOptions.plist

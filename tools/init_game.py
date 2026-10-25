@@ -25,10 +25,23 @@ def initialize(root, name, identity, home, dry_run=False):
     profile['evidence'] = {}
     project, count = re.subn(r'^config/name=.*$', lambda _: 'config/name=' + json.dumps(name.strip(), ensure_ascii=False), project_path.read_text(), flags=re.M)
     if count != 1: raise ValueError('project application name missing or duplicated')
+    is_new_product = product['id'] != 'com.seorilabs.startergame'
+    if is_new_product:
+        # Public test app identities belong to Starter, including its non-monetized ads.
+        project = project.replace(', "res://addons/admob/plugin.cfg"', '')
+        project = re.sub(r'^general/(?:android|ios)/app_id=.*\n?', '', project, flags=re.M)
     if not dry_run:
         config_path.write_text(json.dumps(product, ensure_ascii=False, indent=2) + '\n')
         profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2) + '\n')
         project_path.write_text(project)
+        if is_new_product:
+            runtime_path = root / 'godot/config/runtime.json'
+            runtime_path.write_text(json.dumps({'mode':'local','platformEnabled':False,'networkRequired':False}, indent=2)+'\n')
+            binding = root / 'godot/config/platform.json'
+            if binding.exists():
+                binding.write_text(json.dumps({'firebase':{},'auth':{},'platform':{},'admob':{}}, indent=2)+'\n')
+            firebase_binding = root / '.firebaserc'
+            if firebase_binding.exists(): firebase_binding.write_text(json.dumps({'projects':{}}, indent=2)+'\n')
     return product
 
 

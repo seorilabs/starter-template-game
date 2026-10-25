@@ -1,0 +1,46 @@
+{
+  "firebase": {
+    "android": {
+      "apiKey": "AIzaSyBlpvTikKqfsS0EDdiRcI64HVXGNWU1Os0",
+      "appId": "1:738479249862:android:c6b10b9ac8e0172f873ac7",
+      "projectId": "seorilabs-starter-game",
+      "projectNumber": "738479249862",
+      "oauthWebClientId": "738479249862-5sia5bg9hgp9vu15dcvlevntmn72l8s5.apps.googleusercontent.com"
+    },
+    "ios": {
+      "apiKey": "AIzaSyC1JHKvun14a8q3MRmAnqRR0gh4dUWcrzs",
+      "appId": "1:738479249862:ios:57c08cd66a3a4918873ac7",
+      "projectId": "seorilabs-starter-game",
+      "projectNumber": "738479249862",
+      "oauthWebClientId": "738479249862-5sia5bg9hgp9vu15dcvlevntmn72l8s5.apps.googleusercontent.com"
+    }
+  },
+  "auth": {
+    "googleWebClientId": "738479249862-5sia5bg9hgp9vu15dcvlevntmn72l8s5.apps.googleusercontent.com",
+    "appleEnabled": true
+  },
+  "platform": {
+    "base_url": "https://platform-api-306278488979.asia-northeast3.run.app",
+    "auth_base_url": "https://platform-iap-306278488979.asia-northeast3.run.app",
+    "iap_base_url": "https://platform-iap-306278488979.asia-northeast3.run.app",
+    "ingest_base_url": "https://platform-ingest-306278488979.asia-northeast3.run.app",
+    "ads_base_url": "https://platform-ads-306278488979.asia-northeast3.run.app",
+    "app_id": "starter-game",
+    "iap_environment": "sandbox",
+    "runtime": "godot-native",
+    "presence_enabled": true,
+    "event_context": {
+      "appVersion": "1.1.0"
+    }
+  },
+  "admob": {
+    "android": {
+      "appId": "ca-app-pub-9932778305312246~4142834020",
+      "rewardedUnit": "ca-app-pub-9932778305312246/4481831090"
+    },
+    "ios": {
+      "appId": "ca-app-pub-9932778305312246~5356551184",
+      "rewardedUnit": "ca-app-pub-9932778305312246/5411769387"
+    }
+  }
+}

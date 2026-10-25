@@ -1,5 +1,5 @@
 {
-  "mode": "local",
-  "platformEnabled": false,
-  "networkRequired": false
+  "mode": "platform",
+  "platformEnabled": true,
+  "networkRequired": true
 }

@@ -8,9 +8,11 @@
     "track": "internal"
   },
   "internalTesting": {
-    "purpose": "Developer template sample; local-only gameplay",
-    "ads": false,
-    "inAppPurchases": false
+    "purpose": "Landscape game template with live platform accounts, cloud saves, inbox, sandbox purchases and non-monetized test ads",
+    "ads": true,
+    "inAppPurchases": true,
+    "testPurchasesOnly": true,
+    "nonMonetizedAdVersion": "1.1.0"
   },
   "privacyPolicyUrl": "https://www.seorilabs.com/privacy/",
   "contactEmail": "cs@seorilabs.com"

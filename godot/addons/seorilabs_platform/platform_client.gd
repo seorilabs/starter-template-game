@@ -23,10 +23,13 @@ const AtomicJsonStore := preload("core/atomic_json_store.gd")
 const UpdateGate := preload("core/update_gate.gd")
 
 ## SDK 버전. 이벤트 context와 배포본 VERSION 파일이 같은 값을 사용한다.
-const SDK_VERSION := "1.0.0"
+const SDK_VERSION := "1.1.0"
 
 ## OpenAPI BoxOpenRequest.requestId 와 같다.
 static var _BOX_REQUEST_ID := RegEx.create_from_string("^[A-Za-z0-9_-]{8,64}$")
+
+## OpenAPI PassClaimRequest.entitlementId 와 같다. requestId는 _BOX_REQUEST_ID와 같은 형식이다.
+static var _PASS_ENTITLEMENT_ID := RegEx.create_from_string("^[A-Za-z0-9._-]{1,128}$")
 
 ## 세션이 갱신되면 발생한다.
 signal session_changed(session: Dictionary)
@@ -101,6 +104,9 @@ var _active_refresh_generation := 0
 # 테스트는 wall clock만 전진시켜 기기 sleep을 재현한다. 제품에서는
 # 항상 Time.get_unix_time_from_system()을 사용한다.
 var _unix_time_ms_source: Callable = Callable()
+var _analytics_enabled := true
+var _analytics_generation := 0
+var _presence_allowed := false
 
 
 func _ready() -> void:
@@ -153,6 +159,7 @@ func configure(options: Dictionary) -> void:
 	if typeof(_event_context_source) == TYPE_DICTIONARY:
 		_event_context_source = (_event_context_source as Dictionary).duplicate(true)
 	_runtime = String(options.get("runtime", "")).strip_edges()
+	_presence_allowed = bool(options.get("presence_enabled", false))
 
 	_transport.configure(
 		base,
@@ -162,7 +169,7 @@ func configure(options: Dictionary) -> void:
 	_transport.set_client_context(SDK_VERSION, _client_context)
 	_ensure_presence()
 	_presence.configure({
-		"enabled": bool(options.get("presence_enabled", false)),
+		"enabled": _presence_allowed and _analytics_enabled,
 		"token_base_url": _ingest_base_url,
 		"app_id": _app_id,
 		"context": _event_context_source,
@@ -693,11 +700,22 @@ func _store_session(result: Dictionary) -> void:
 
 # ---------------------------------------------------------------- 이벤트
 
+## Opt-out drops unsent events and prevents late failures from restoring them.
+func set_analytics_enabled(enabled: bool) -> void:
+	_analytics_enabled = enabled
+	_analytics_generation += 1
+	if not enabled:
+		_event_buffer.clear()
+		_event_outbox.clear()
+	if _presence != null:
+		_presence.configure({"enabled": _presence_allowed and enabled, "token_base_url": _ingest_base_url,
+			"app_id": _app_id, "context": _event_context_source})
+
 ## 이벤트를 기록한다. 즉시 보내지 않는다.
 ##
 ## 실패해도 아무 일도 일어나지 않는다. 계측 때문에 게임이 멈추면 안 된다.
 func track(event_name: String, params: Dictionary = {}) -> void:
-	if event_name.is_empty():
+	if not _analytics_enabled or event_name.is_empty():
 		return
 
 	# 필드 이름은 서버 계약을 따른다. 서버가 미지 필드를 거부하므로
@@ -720,6 +738,7 @@ func track(event_name: String, params: Dictionary = {}) -> void:
 ## 앱의 canonical analytics envelope를 받아 같은 eventId/발생시각을 보존한다.
 ## 서버 계약에 없는 envelope 필드는 전송하지 않는다.
 func track_event(event: Dictionary) -> void:
+	if not _analytics_enabled: return
 	var event_id := String(event.get("event_id", "")).strip_edges()
 	var event_name := String(event.get("name", "")).strip_edges()
 	var occurred_at_micros := int(event.get("occurred_at_micros", 0))
@@ -739,6 +758,10 @@ func track_event(event: Dictionary) -> void:
 
 ## 버퍼와 outbox를 보낸다.
 func flush_events(callback: Callable = Callable()) -> void:
+	if not _analytics_enabled:
+		_invoke(callback, {"ok": true, "result": {}})
+		return
+	var analytics_generation := _analytics_generation
 	# 동시 전송을 막는다. 겹치면 같은 이벤트가 두 번 나간다.
 	if _flushing:
 		_invoke(callback, {"ok": true, "result": {}})
@@ -761,6 +784,10 @@ func flush_events(callback: Callable = Callable()) -> void:
 
 	# 세션이 없어도 익명 수집이 동작해야 한다.
 	var send := func(token: String) -> void:
+		if not _analytics_enabled or analytics_generation != _analytics_generation:
+			_flushing = false
+			_invoke(callback, {"ok": true, "result": {}})
+			return
 		var body := {"events": batch}
 		var context := _resolved_event_context()
 		if not context.is_empty():
@@ -775,7 +802,7 @@ func flush_events(callback: Callable = Callable()) -> void:
 			},
 			func(response: Dictionary) -> void:
 				_flushing = false
-				if not response.get("ok", false):
+				if not response.get("ok", false) and _analytics_enabled and analytics_generation == _analytics_generation:
 					# 실패한 배치는 outbox로. 다음 flush에서 다시 시도한다.
 					_push_outbox(batch)
 				_invoke(callback, response)
@@ -1115,6 +1142,11 @@ func verify_purchase(proof: Dictionary, callback: Callable) -> void:
 	)
 
 
+## 서버가 검증한 테스트 티켓 잔액(ADR 0037). 대상 UID나 지급량은 받지 않는다.
+func get_wallet(callback: Callable) -> void:
+	_iap_request({"method": "GET", "path": "/v1/iap/wallet"}, callback)
+
+
 ## 활성 entitlement 목록.
 ##
 ## 마켓 SDK 없이도 환불 반영을 확인할 수 있는 경로다.
@@ -1158,6 +1190,42 @@ func open_box(request_id: String, callback: Callable) -> void:
 		return
 	_iap_request(
 		{"method": "POST", "path": "/v1/iap/boxes/open", "body": {"requestId": request_id}},
+		callback,
+	)
+
+
+## 기간 이용권 상태(ADR 0036).
+##
+## 하루는 서버가 구매를 처음 활성으로 확정한 시각부터 24시간이다. 앱은 기기 시계로
+## 수령 가능 여부를 판정하지 않고 result의 claimable, nextClaimAt, serverTime을 쓴다.
+## 구매 검증에 iap_environment를 설정했다면 같은 환경 원장을 읽는다.
+## result: {serverTime, passes: [PassStatus]}
+func get_passes(callback: Callable) -> void:
+	if is_anonymous():
+		callback.call(_client_error("anonymous_not_allowed", "로그인 후에 볼 수 있어요"))
+		return
+	_iap_request({"method": "GET", "path": "/v1/iap/passes"}, callback)
+
+
+## 기간 이용권의 오늘 몫을 받는다(ADR 0036).
+##
+## request_id는 앱이 만들어 요청 전에 저장한다. 응답이 모호하면(timeout, 5xx) 같은
+## request_id로 다시 부르면 서버가 처음 결과를 돌려준다(applied=false). 앱은
+## applied와 관계없이 request_id마다 result.amount를 한 번만 지급한다.
+## 다른 IAP 요청처럼 일반 재시도는 하지 않는다.
+func claim_pass(entitlement_id: String, request_id: String, callback: Callable) -> void:
+	if not _PASS_ENTITLEMENT_ID.search(entitlement_id) or not _BOX_REQUEST_ID.search(request_id):
+		callback.call(_client_error("request_invalid", "이용권 수령 요청이 올바르지 않아요"))
+		return
+	if is_anonymous():
+		callback.call(_client_error("anonymous_not_allowed", "로그인 후에 받을 수 있어요"))
+		return
+	_iap_request(
+		{
+			"method": "POST",
+			"path": "/v1/iap/passes/claim",
+			"body": {"entitlementId": entitlement_id, "requestId": request_id},
+		},
 		callback,
 	)
 

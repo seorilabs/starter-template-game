@@ -12,3 +12,13 @@ if ! "${GODOT:-godot}" --headless --path "$root/${PROJECT_DIR:-godot}" --script 
 fi
 cat "$log"
 if grep -Eq '^(SCRIPT ERROR|ERROR:)' "$log"; then exit 1; fi
+python3 - "$XCODE_PROJECT" <<'PY'
+from pathlib import Path
+import plistlib,sys
+project=Path(sys.argv[1]);entitlements=project.with_suffix('')/(project.stem+'.entitlements')
+if not entitlements.is_file():raise SystemExit('Exported signing entitlements not found')
+value=plistlib.loads(entitlements.read_bytes())
+value['com.apple.developer.applesignin']=['Default']
+value['com.apple.developer.devicecheck.appattest-environment']='production'
+entitlements.write_bytes(plistlib.dumps(value))
+PY

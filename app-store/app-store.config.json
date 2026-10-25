@@ -7,7 +7,7 @@
   "testFlight": {
     "internalOnly": true,
     "groupName": "Internal Testers",
-    "whatToTest": "Complete the tutorial, collect three stars, return to the home screen and confirm that progress restores after restarting."
+    "whatToTest": "Use the landscape camp to create an account, view and copy UID and support code, link and recover an account, complete a three-star round and restore cloud progress. Receive and claim platform mail, test sandbox purchases and purchase restoration, and watch a non-monetized test ad with server confirmation. Check analytics opt-out and account deletion status. Purchases must use sandbox test accounts."
   },
   "exportCompliance": {
     "usesNonExemptEncryption": false

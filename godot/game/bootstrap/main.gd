@@ -2,6 +2,9 @@ extends "res://addons/seorilabs_game/flow/outgame_main.gd"
 const Sample = preload("res://game/features/sample_round/sample_round.tscn")
 const Home = preload("res://game/features/home/home.gd")
 var sample: Node
+var connect_platform := true
+var platform_runtime: RefCounted
+const Runtime = preload("res://game/adapters/platform_runtime.gd")
 
 func _init() -> void:
  var product: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/product.json"))
@@ -18,6 +21,15 @@ func _init() -> void:
   return stage
  launch_game = _launch_round
  score_provider = func() -> Dictionary: return {"score": int(state.data.tutorial.hits) * 100, "runId": state.data.ui.get("runId", ""), "completed": state.data.tutorial.status == "complete"}
+
+func _ready() -> void:
+ landscape = true
+ var runtime: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/runtime.json"))
+ if connect_platform and runtime.get("platformEnabled", false):
+  platform_runtime = Runtime.new()
+  var options: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/platform.json"))
+  platform_runtime.attach(self, options)
+ super._ready()
 
 func _launch_round(owner: Control) -> void:
  if state.data.tutorial.status != "active" and not state.replay_tutorial():

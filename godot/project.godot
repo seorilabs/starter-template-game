@@ -1,22 +1,43 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
 config_version=5
 
+[admob]
+
+general/android/app_id="ca-app-pub-9932778305312246~4142834020"
+general/ios/app_id="ca-app-pub-9932778305312246~5356551184"
+
 [application]
+
 config/name="Seorilabs Game Starter"
-config/version="1.0.0"
-config/icon="res://game/assets/icon.svg"
+config/version="1.1.0"
 run/main_scene="res://game/bootstrap/main.tscn"
+config/features=PackedStringArray("4.7")
+config/icon="res://game/assets/icon.svg"
 
 [display]
-window/size/viewport_width=390
-window/size/viewport_height=844
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/seori_account_link/plugin.cfg", "res://addons/GodotGooglePlayBilling/plugin.cfg", "res://addons/admob/plugin.cfg")
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
+
 [rendering]
+
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
-textures/default_filters/use_nearest_mipmap_filter=false
-
-[gui]
-theme/default_font_multichannel_signed_distance_field=true
