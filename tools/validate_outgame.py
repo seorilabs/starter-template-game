@@ -65,7 +65,14 @@ def fingerprint(root, profile):
                     paths = sorted(set(paths) | set(files))
             except (ValueError, OSError, AttributeError):
                 pass
-    for value in paths:
+    # Runtime, product adapters and verification tools all invalidate prior evidence.
+    for folder in ('godot', 'tools'):
+        for path in (root / folder).rglob('*'):
+            if path.is_file() and path.suffix in ('.gd', '.tscn', '.tres', '.json', '.svg', '.png', '.ttf', '.py', '.cfg', '.godot') and not any(part in ('.godot', 'build', '__pycache__') for part in path.relative_to(root).parts):
+                # The profile is hashed without its evidence below.
+                if path.name != 'outgame-profile.json':
+                    paths.append(path.relative_to(root).as_posix())
+    for value in sorted(set(paths)):
         path = safe_file(root, value)
         if path:
             digest.update(value.encode() + b'\0' + path.read_bytes() + b'\0')
