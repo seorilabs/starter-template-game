@@ -49,6 +49,7 @@ var config: Dictionary = {"appId": "", "privacy_url": "", "terms_url": "", "anal
 var _view := 0
 var _font_title: Font
 var _font_body: Font
+var palette: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://addons/seorilabs_game/skins/soft_adventure/skin.json"))
 
 func _variable_font(path: String, weight: int) -> Font:
 	var font := FontVariation.new()
@@ -98,7 +99,7 @@ func _ready() -> void:
 	ranking.store = state
 	_font_body = _variable_font("res://addons/seorilabs_game/fonts/NotoSansKR.ttf", 550)
 	var base := ColorRect.new()
-	base.color = Color("f1ecdc")
+	base.color = Color(palette.background)
 	base.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	base.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(base)
@@ -127,7 +128,7 @@ func _ready() -> void:
 	backing.offset_top = 12
 	backing.offset_bottom = -12
 	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	backing.add_theme_stylebox_override("panel", _skin(Color("fff9eb"), Color("9b9478"), 18))
+	backing.add_theme_stylebox_override("panel", _skin(Color(palette.panel), Color("9b9478"), 18))
 	add_child(backing)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -174,13 +175,13 @@ func _apply_settings() -> void:
 	theme.default_font = _font_body
 	theme.default_font_size = 16 + (3 if state.data.settings.large_text else 0)
 	_font_title = load("res://addons/seorilabs_game/fonts/Jua.ttf") if language() == "ko" else _variable_font("res://addons/seorilabs_game/fonts/Fredoka.ttf", 650)
-	theme.set_color("font_color", "Label", Color("244e5c"))
+	theme.set_color("font_color", "Label", Color(palette.text))
 	for cls in ["Button", "CheckButton"]:
-		theme.set_color("font_color", cls, Color("244e5c"))
-		theme.set_color("font_hover_color", cls, Color("244e5c"))
-		theme.set_color("font_pressed_color", cls, Color("244e5c"))
-		theme.set_color("font_focus_color", cls, Color("244e5c"))
-		theme.set_color("font_hover_pressed_color", cls, Color("244e5c"))
+		theme.set_color("font_color", cls, Color(palette.text))
+		theme.set_color("font_hover_color", cls, Color(palette.text))
+		theme.set_color("font_pressed_color", cls, Color(palette.text))
+		theme.set_color("font_focus_color", cls, Color(palette.text))
+		theme.set_color("font_hover_pressed_color", cls, Color(palette.text))
 		theme.set_color("font_disabled_color", cls, Color("6d7c79"))
 		theme.set_stylebox("normal", cls, _skin(Color("fff8e5"), Color("94b3a6")))
 		theme.set_stylebox("hover", cls, _skin(Color("e8efdb"), Color("56847c")))
@@ -283,7 +284,7 @@ func _button(text: String, action: Callable, parent: Node = null, primary: bool 
 	if primary:
 		button.add_theme_font_override("font", _font_title if _font_title != null else _font_body)
 		button.add_theme_font_size_override("font_size", 22)
-		var skin := _skin(Color("f6d072"), Color("aa8036"), 12)
+		var skin := _skin(Color(palette.primary), Color("aa8036"), 12)
 		skin.shadow_color = Color("8e6425")
 		skin.shadow_size = 2
 		skin.shadow_offset = Vector2(0, 3)
@@ -611,8 +612,8 @@ func _draw_support() -> void:
 	value.text = support.code if not support.code.is_empty() else tr_text("Checking…", "확인 중…") if support.status == "checking" else "—"
 	value.add_theme_font_override("font", _variable_font("res://addons/seorilabs_game/fonts/NotoSansMono.ttf", 500))
 	value.add_theme_font_size_override("font_size", 21)
-	value.add_theme_color_override("font_uneditable_color", Color("244e5c"))
-	value.add_theme_color_override("font_color", Color("244e5c"))
+	value.add_theme_color_override("font_uneditable_color", Color(palette.text))
+	value.add_theme_color_override("font_color", Color(palette.text))
 	value.add_theme_stylebox_override("read_only", _skin(Color("fffdf3"), Color("7e9b91")))
 	value.custom_minimum_size.y = 54
 	content.add_child(value)
@@ -741,7 +742,7 @@ func _rank_row(row: Dictionary, self_row: bool = false) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.mouse_filter = Control.MOUSE_FILTER_PASS
 	card.custom_minimum_size.y = 48
-	card.add_theme_stylebox_override("panel", _skin(Color("e5ebd2") if self_row or row.get("isSelf", false) else Color("fff9eb"), Color("b4c4a0") if self_row else Color("e1e3d1"), 8))
+	card.add_theme_stylebox_override("panel", _skin(Color("e5ebd2") if self_row or row.get("isSelf", false) else Color(palette.panel), Color("b4c4a0") if self_row else Color("e1e3d1"), 8))
 	var line := HBoxContainer.new()
 	line.mouse_filter = Control.MOUSE_FILTER_PASS
 	line.add_theme_constant_override("separation", 7)
