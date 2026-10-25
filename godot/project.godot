@@ -1,8 +1,9 @@
 config_version=5
 
 [application]
-config/name="Star Collector"
+config/name="Seorilabs Game Starter"
 config/version="1.0.0"
+config/icon="res://game/assets/icon.svg"
 run/main_scene="res://game/bootstrap/main.tscn"
 
 [display]
@@ -13,6 +14,8 @@ window/stretch/aspect="expand"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
 textures/default_filters/use_nearest_mipmap_filter=false
 
 [gui]

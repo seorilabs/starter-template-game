@@ -1,0 +1,22 @@
+{
+  "appName": "Seorilabs Game Starter",
+  "bundleId": "com.seorilabs.startergame",
+  "sku": "seorilabs-starter-game",
+  "teamId": "HCDUXX4Z3X",
+  "primaryLocale": "en-US",
+  "testFlight": {
+    "internalOnly": true,
+    "groupName": "Internal Testers",
+    "whatToTest": "Complete the tutorial, collect three stars, return to the home screen and confirm that progress restores after restarting."
+  },
+  "exportCompliance": {
+    "usesNonExemptEncryption": false
+  },
+  "appReview": {
+    "contactFirstName": "Seorilabs",
+    "contactLastName": "Support",
+    "contactPhone": "+821050675746",
+    "contactEmail": "cs@seorilabs.com",
+    "demoAccountRequired": false
+  }
+}

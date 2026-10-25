@@ -11,7 +11,13 @@
       "foundation": false,
       "paths": [
         "godot/addons/seorilabs_game/**",
-        "godot/game/**"
+        "godot/game/**",
+        "godot/config/**",
+        "godot/export_presets.cfg",
+        "tools/check_native.py"
+      ],
+      "platformPaths": [
+        "godot/export_presets.cfg"
       ]
     },
     {

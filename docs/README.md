@@ -23,5 +23,5 @@ Obsidian은 지식베이스와 재사용 가능한 운영 노하우를 보조로
 - 확인된 사실과 추정은 분리한다.
 - 모르는 값은 `확정 필요`로 남긴다.
 - 콘솔에서 변경한 값은 관련 문서와 config example에 반영한다.
-- 릴리스 전에는 `npm run check:release`로 placeholder와 blocker를 확인한다.
+- `npm run check:release`는 네이티브 빌드 입력을 확인한다. 승인 범위와 실행 근거는 중앙 검증기로 검사하고, 마켓 처리와 테스터 연결은 provider에서 별도로 확인한다.
 

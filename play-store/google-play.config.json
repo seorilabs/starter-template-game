@@ -1,0 +1,17 @@
+{
+  "appName": "Seorilabs Game Starter",
+  "packageName": "com.seorilabs.startergame",
+  "defaultLanguage": "en-US",
+  "track": "internal",
+  "aabPath": "build/android/starter-template-game.aab",
+  "release": {
+    "track": "internal"
+  },
+  "internalTesting": {
+    "purpose": "Developer template sample; local-only gameplay",
+    "ads": false,
+    "inAppPurchases": false
+  },
+  "privacyPolicyUrl": "https://www.seorilabs.com/privacy/",
+  "contactEmail": "cs@seorilabs.com"
+}

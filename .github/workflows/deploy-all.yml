@@ -1,76 +1,48 @@
-# Deploy All — 릴리즈 태그 1개를 해석해 AIT/Google Play 를 한 번에 배포.
-# (App Store는 Godot iOS 재사용 워크플로우 도입 후 추가 예정)
-name: Deploy All
-
+name: Deploy Native Internal Tests
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "배포할 SemVer 태그. 비우면 최신 vX.Y.Z."
         type: string
-        required: false
-        default: ""
-      deploy_ait:
-        type: boolean
-        default: true
+        required: true
       deploy_google_play:
         type: boolean
         default: true
-      memo:
-        type: string
-        required: false
-        default: ""
-
+      deploy_app_store:
+        type: boolean
+        default: true
+      upload:
+        type: boolean
+        default: false
 permissions:
   contents: read
+  actions: read
   id-token: write
-
 concurrency:
-  group: deploy-all-${{ inputs.release_tag || github.ref }}
+  group: native-internal-${{ inputs.release_tag }}
   cancel-in-progress: false
-
 jobs:
-  resolve:
-    name: Resolve release tag
-    runs-on: ${{ github.event.repository.private && 'seorilabs-x64' || 'ubuntu-latest' }}
-    timeout-minutes: 10
-    outputs:
-      tag: ${{ steps.t.outputs.tag }}
-      version_name: ${{ steps.t.outputs.version_name }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - id: t
-        shell: bash
-        run: |
-          set -euo pipefail
-          tag="${{ inputs.release_tag }}"
-          if [ -z "$tag" ]; then
-            tag="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)"
-            [ -n "$tag" ] || { echo "release_tag 비어있고 vX.Y.Z 태그 없음. 먼저 Release Tag 실행." >&2; exit 1; }
-          fi
-          version_name="${tag#v}"
-          { echo "tag=$tag"; echo "version_name=$version_name"; } >> "$GITHUB_OUTPUT"
-
-  ait:
-    name: Deploy AIT
-    needs: resolve
-    if: ${{ inputs.deploy_ait }}
-    uses: ./.github/workflows/deploy-apps-in-toss.yml
-    secrets: inherit
-    with:
-      release_tag: ${{ needs.resolve.outputs.tag }}
-      memo: ${{ inputs.memo }}
-
   google-play:
-    name: Deploy Google Play
-    needs: resolve
     if: ${{ inputs.deploy_google_play }}
     uses: ./.github/workflows/deploy-google-play.yml
-    secrets: inherit
     with:
-      release_tag: ${{ needs.resolve.outputs.tag }}
-      version_name: ${{ needs.resolve.outputs.version_name }}
-      upload: true
+      release_tag: ${{ inputs.release_tag }}
+      upload: ${{ inputs.upload }}
+    secrets:
+      GOOGLE_PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.GOOGLE_PLAY_UPLOAD_KEYSTORE_BASE64 }}
+      GOOGLE_PLAY_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.GOOGLE_PLAY_UPLOAD_KEYSTORE_PASSWORD }}
+      GOOGLE_PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.GOOGLE_PLAY_UPLOAD_KEY_PASSWORD }}
+  app-store:
+    if: ${{ inputs.deploy_app_store }}
+    uses: ./.github/workflows/deploy-app-store.yml
+    with:
+      release_tag: ${{ inputs.release_tag }}
+      upload: ${{ inputs.upload }}
+    secrets:
+      APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+      APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+      APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+      APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
