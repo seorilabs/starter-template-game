@@ -15,3 +15,5 @@ Google Play Billing uses official `godot-sdk-integrations/godot-google-play-bill
 iOS에서는 추적 허용 창을 요청하지 않고, 광고 초기화 전 이 앱에 남은 IAB 광고 선택 값을 정리하며 비개인화 요청을 사용한다. Android는 Google UMP의 실제 선택 결과를 확인한다. 광고 시청 callback은 지급 근거가 아니며 서버 SSV 확인과 영속 기록 후에 수령을 확인한다.
 
 `tools/prepare_android.sh`와 `tools/prepare_ios.sh`가 복제한 저장소만으로 native SDK를 준비한다. iOS generic SDK용 컴파일은 기기나 시뮬레이터 실행 근거가 아니다. 런타임 연동과 UI는 별도 통합 검수에서 확인한다.
+
+AdMob Editor의 Noto Sans CJK SC는 Adobe의 2014–2021 저작권과 SIL OFL 1.1을 보존한다. 같은 폴더의 `OFL.txt`와 잠금 파일에 원본 해시 및 라이선스 출처를 기록한다. Editor 전용 그림, 음악과 이 폰트는 출시 내보내기에서 제외한다.

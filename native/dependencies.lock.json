@@ -42,6 +42,14 @@
         "file": "godot/addons/admob/gdscript/src/core/MobileSingletonPlugin.gd",
         "reason": "Explicit development boundaries replace implicit editor mock singleton creation",
         "sha256": "736758df98ba34a89b8ad93bff66602846791106b42deb94e128ac553bd03212"
+      },
+      "editorFont": {
+        "name": "Noto Sans CJK SC",
+        "copyright": "2014-2021 Adobe",
+        "sha256": "0832cf607170f42922aaeb8dd590e346174e247800c35aa4137055542462dbfa",
+        "license": "SIL OFL 1.1",
+        "licenseSource": "https://raw.githubusercontent.com/google/fonts/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc/OFL.txt",
+        "licenseSha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
       }
     }
   },
