@@ -38,7 +38,7 @@ func run() -> void:
 	DirAccess.make_dir_recursive_absolute(directory)
 	main = load("res://game/bootstrap/main.tscn").instantiate()
 	main.connect_platform = false
-	main.device_locale = "en-US"
+	main.device_locale = arg("--locale", "en-US")
 	main.state = State.new(directory + "/local.json")
 	main.clipboard_writer = func(_value: String) -> bool: return true
 	client = SDK.new()
@@ -60,6 +60,8 @@ func run() -> void:
 	d.step("create via primary button", await tap("start"))
 	d.step("real Firebase adapter and SDK session establish a cloud-ready account", main.accounts.connected() and cloud.progress_ready and service.created == 1 and main.screen == "title")
 	var original_uid := str(main.accounts.details.get("uid", ""))
+	if OS.get_cmdline_user_args().has("--large-text"):
+		d.step("large text through settings buttons", await tap("settings") and await tap("accessibility") and await tap("large_text") and main.state.data.settings.large_text and await tap("close"))
 	d.step("open identifiers with buttons", await tap("account") and await tap("account_identifiers"))
 	d.expect_equal("confirmed UID", b("identity_uid").text, "UID  " + original_uid)
 	d.expect_equal("confirmed PUID", b("identity_platformUserId").text, "PUID  puid-" + original_uid)
@@ -70,14 +72,14 @@ func run() -> void:
 	d.begin("actual-round-cloud-save", ["tutorial", "account_save", "platform_end_to_end"])
 	d.step("start actual sample after ready", await tap("start") and main.screen == "play")
 	for i in 3: d.step("collect sample star", await d.tap(text_button("★")))
-	d.step("finish actual round", await d.tap(text_button("Collect +10")))
+	d.step("finish actual round", await d.tap(text_button(main.tr_text("Collect +10", "받기 +10"))))
 	d.step("game progress reaches cloud boundary", main.state.data.coins == 10 and cloud.documents[original_uid].coins == 10 and not cloud.has_pending())
 	d.step("return to camp", await tap("reward_continue") and main.screen == "home")
 	await d.shot("connected-camp")
 	d.end()
 	d.begin("inbox-wallet-and-store", ["inbox", "commerce", "platform_end_to_end"])
 	d.step("open real server inbox", await tap("inbox"))
-	d.step("claim with server SDK", await d.tap(text_button("Claim")))
+	d.step("claim with server SDK", await d.tap(text_button(main.tr_text("Claim", "받기"))))
 	d.step("server inventory signal refreshes ticket wallet without granting game coins", runtime.commerce.wallet.get("starter_test_ticket_1", 0) == 1 and main.state.data.coins == 10)
 	await d.shot("server-mail-received")
 	d.step("close inbox", await tap("close"))
