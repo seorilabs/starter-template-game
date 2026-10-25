@@ -12,8 +12,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "tutorial",
@@ -22,8 +21,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "account_save",
@@ -32,8 +30,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "settings_support",
@@ -42,8 +39,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "inbox",
@@ -52,8 +48,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "commerce",
@@ -62,8 +57,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "observability",
@@ -72,8 +66,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "operations",
@@ -82,8 +75,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "ui_support_entry",
@@ -92,8 +84,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "ui_analytics_opt_out",
@@ -102,8 +93,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "ui_locale_offline",
@@ -112,8 +102,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "ui_navigation",
@@ -122,8 +111,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     },
     {
       "id": "ui_leaderboard",
@@ -132,8 +120,7 @@
       "paths": [
         "godot/addons/seorilabs_game/**",
         "godot/game/**"
-      ],
-      "platformPaths": []
+      ]
     }
   ]
 }
