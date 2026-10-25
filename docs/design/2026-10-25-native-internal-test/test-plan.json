@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "level": "L3",
+  "baseline": "4a6935f8203b6b4d428ba3a7319c5739adfc8ccb",
+  "changedFeatures": [
+    "startup",
+    "tutorial",
+    "account_save",
+    "settings_support",
+    "inbox",
+    "commerce",
+    "observability",
+    "operations",
+    "ui_support_entry",
+    "ui_analytics_opt_out",
+    "ui_locale_offline",
+    "ui_navigation",
+    "ui_leaderboard"
+  ],
+  "environments": [
+    "dev"
+  ],
+  "redesign": false,
+  "foundationRerun": true,
+  "floorOverrides": [],
+  "release": {
+    "markets": [
+      "google-play",
+      "app-store"
+    ],
+    "until": "test-track"
+  }
+}
