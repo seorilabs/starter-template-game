@@ -112,7 +112,9 @@ func show_ad(ssv: Dictionary) -> Dictionary:
 	_ad.show(listener)
 	await _wait(answer, 180000)
 	# An unclosed native screen stays busy; a late close cannot satisfy another show.
-	if answer.is_empty(): return {"ok": false, "code": "ad_close_timeout"}
+	if answer.is_empty():
+		AudioServer.set_bus_mute(0, _previous_mute)
+		return {"ok": false, "code": "ad_close_timeout"}
 	var shown := answer[0]
 	_discard()
 	return {"ok": shown, "code": "" if shown else "ad_show_failed"}

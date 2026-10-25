@@ -21,6 +21,8 @@ var _billing
 var _connection_ready := false
 var _connection_started := false
 var _ready_waiters: Array = []
+var connection_timeout_ms := 20000
+var _connection_deadline := 0
 var _detail_cache: Dictionary = {}
 var _detail_queue: Array = []
 var _detail_in_flight := false
@@ -472,11 +474,17 @@ func _when_ready(callback: Callable) -> void:
 	if _billing == null:
 		callback.call(_error("play_billing_unavailable", "Google Play Billing plugin이 없습니다."))
 		return
-	# 연결을 기다린다. 여기에는 타임아웃이 없다. 연결이 끝내 안 되면
-	# 이 waiter는 영영 호출되지 않고 상위 복원이 매달린다.
+	# 상위 화면의 대기가 끝난 뒤 구매가 뒤늦게 실행되지 않도록 연결 대기를 제한한다.
+	if _connection_deadline == 0:
+		_connection_deadline = Time.get_ticks_msec() + connection_timeout_ms
 	print("[iap] restore stage=awaiting_connection waiters=%d" % (_ready_waiters.size() + 1))
 	_ready_waiters.append(callback)
 	_start_connection()
+
+
+func _process(_delta: float) -> void:
+	if _connection_deadline != 0 and Time.get_ticks_msec() >= _connection_deadline:
+		_on_connect_error(-1, "connection timeout")
 
 
 func _start_connection() -> void:
@@ -487,6 +495,7 @@ func _start_connection() -> void:
 
 
 func _on_connected() -> void:
+	_connection_deadline = 0
 	_connection_ready = true
 	_connection_started = false
 	var waiters := _ready_waiters.duplicate()
@@ -497,19 +506,28 @@ func _on_connected() -> void:
 
 
 func _on_disconnected() -> void:
-	_connection_ready = false
-	_connection_started = false
+	_on_connect_error(-1, "disconnected")
 
 
 func _on_connect_error(response_code: int, _debug_message: String) -> void:
 	_connection_ready = false
 	_connection_started = false
-	var response := _billing_error(response_code, "Google Play Billing 연결에 실패했습니다.")
-	var waiters := _ready_waiters.duplicate()
+	_connection_deadline = 0
+	# Clear the entire pending batch before callbacks can re-enter. Reconnecting
+	# must not revive a purchase that its caller already observed as failed.
 	_ready_waiters.clear()
-	for callback in waiters:
-		if callback is Callable and callback.is_valid():
-			callback.call(response.duplicate(true))
+	var requests := _detail_queue.duplicate()
+	_detail_queue.clear()
+	_detail_in_flight = false
+	_detail_product_id = ""
+	var owned := _owned_query_callback
+	_owned_query_callback = Callable()
+	_owned_query_in_flight = false
+	var response := _billing_error(response_code, "Google Play Billing 연결에 실패했습니다.")
+	for request in requests:
+		var callback: Callable = request.get("callback", Callable())
+		if callback.is_valid(): callback.call(response.duplicate(true))
+	if owned.is_valid(): owned.call(response.duplicate(true))
 
 
 func _bridge_is_ready() -> bool:
