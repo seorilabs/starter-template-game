@@ -19,7 +19,7 @@ def main():
     project = args.project.resolve()
     if not (project / 'project.godot').is_file(): parser.error('Godot project not found')
     godot = os.environ.get('GODOT', 'godot')
-    imported = subprocess.run([godot, '--headless', '--path', str(project), '--import', '--quit-after', '2'], capture_output=True, text=True, timeout=180)
+    imported = subprocess.run([godot, '--headless', '--path', str(project), '--import'], capture_output=True, text=True, timeout=180)
     log = imported.stdout + imported.stderr
     if imported.returncode or has_errors(log):
         sys.stderr.write(log)
