@@ -1,0 +1,14 @@
+name: Initialize Release Version Ledger
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        type: boolean
+        default: true
+permissions:
+  contents: write
+jobs:
+  initialize:
+    uses: seorilabs/.github/.github/workflows/init-release-version-ledger.yml@main
+    with:
+      dry_run: ${{ inputs.dry_run }}
