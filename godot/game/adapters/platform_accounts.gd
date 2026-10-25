@@ -66,7 +66,7 @@ func supply(callback: Callable) -> void:
 	callback.call({"ok": true, "session_ready": true} if result.ok else result)
 
 func execute(action: String, payload: Dictionary, callback: Callable) -> void:
-	if _busy or (action in ["create", "recover", "link", "logout", "delete"] and operation_blocker.is_valid() and operation_blocker.call()):
+	if _busy or (action in ["create", "recover", "link", "logout", "delete", "refresh"] and operation_blocker.is_valid() and operation_blocker.call()):
 		callback.call({"ok": false, "code": "account_busy"})
 		return
 	_busy = true

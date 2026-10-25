@@ -8,7 +8,7 @@
   ],
   "source": {
     "repository": "https://github.com/seorilabs/game-foundation",
-    "commit": "75fd9d261b086718f4966b462f73a4d60cdb4f1a"
+    "commit": "0877826c24a836176747ccc0d95e77f52d37fbfe"
   },
   "sdk": {
     "version": "1.1.0",
@@ -17,7 +17,7 @@
   },
   "files": {
     "godot/addons/seorilabs_game/README.md": "2ce602f3589121852640b4e4a14f2d43d92a0d796f5e70aa05c3774025ed97fb",
-    "godot/addons/seorilabs_game/flow/outgame_main.gd": "5d044cb38968a35db4fd39115053972002bf73be8ebff7341e2ecfbca027a221",
+    "godot/addons/seorilabs_game/flow/outgame_main.gd": "a24719f7d3b1b73f12c491d948ae1f34d178c821df185649dad49ecb0cc26836",
     "godot/addons/seorilabs_game/flow/popup_queue.gd": "b3469b799ce654c4a489346dc2dd329cb91aff2213bad8a892dbbda6ba558bf3",
     "godot/addons/seorilabs_game/flow/state.gd": "c4f37aff8775ce5799f4f3d31f785e4f8a9bdc64b3619df6d652c52b4c933e5f",
     "godot/addons/seorilabs_game/fonts/Fredoka-OFL.txt": "5c9e7eee5c6b25f4b05b8d53b2e470ea4962f9ced742d044a98f7d95d1375bab",
@@ -45,7 +45,7 @@
     "godot/addons/seorilabs_game/skins/soft_adventure/icon_shop.svg": "c07406e8ce6e7fd31a68f10cd809fc6cb283e0e59c792a5f70dd011f9d345f3c",
     "godot/addons/seorilabs_game/skins/soft_adventure/skin.json": "3425c821818f22af960dcdf8b7be4d882cdeb53b22aa34858402705c3af2277f",
     "godot/addons/seorilabs_game/ui/account_panel.gd": "8a2c73e1c14b48038b89d20b49f86502241b43ff1d2f0e2fca61aa5f819aa9f5",
-    "godot/addons/seorilabs_game/ui/camp_home.gd": "18ada256b07353a143fa20f14ad18d622b24a5890fc0a3a10644b9a8a38c71cf",
+    "godot/addons/seorilabs_game/ui/camp_home.gd": "6714f2a4dcf6644521e284682074ed23cb0d89f9049eb91a0261670de4e445a4",
     "godot/addons/seorilabs_game/ui/outgame.tscn": "6771cb0233df28534c27f9f712f49dfb7e519f276455d3ac05d319569989727f",
     "godot/addons/seorilabs_platform/CHECKSUM": "31d5273efd257f7fed416fb80c072542527e4912dd7584ffb65500c97d54c03e",
     "godot/addons/seorilabs_platform/LICENSE": "44a6be16b60cab758678f098d2e1a9964305ce870ab39f338c9d7a397ad2d7fc",

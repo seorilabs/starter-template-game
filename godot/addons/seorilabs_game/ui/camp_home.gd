@@ -27,7 +27,8 @@ func _ready() -> void:
 	var headline: String = controller.tr_text("A new adventure begins", "새로운 모험의 시작")
 	if not controller.startup_error.is_empty():
 		headline = controller._error_text(controller.startup_error)
-	_text(headline, Rect2(464, 178, 740, 68), 44, Color("244c53"))
+	if not controller.transient_notice.is_empty(): headline = controller.transient_notice
+	_text(headline, Rect2(464, 178, 740, 112), 44, Color("244c53"))
 	var action: String = controller.tr_text("Begin adventure", "모험 시작")
 	if controller.services.mode == "server" and not connected:
 		action = controller.tr_text("Create account", "계정 만들기")

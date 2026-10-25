@@ -101,6 +101,17 @@ func run() -> void:
 	d.step("close ads and open settings", await tap("close") and await tap("settings"))
 	d.step("analytics opt-out", await tap("analytics") and not client._analytics_enabled and not cloud.documents[original_uid].settings.analytics)
 	d.step("close settings", await tap("close"))
+	service.maintenance = true
+	client.fetch_config({}, func(_result: Dictionary): pass)
+	d.step("late maintenance blocks play", await tap("play") and main.screen == "home")
+	var maintenance_notice := false
+	for label in main.find_children("*", "Label", true, false):
+		if label.text.to_lower().contains("maintenance") or label.text.contains("점검"): maintenance_notice = true
+	d.step("maintenance has its own actionable reason", maintenance_notice)
+	await d.shot("maintenance-reason")
+	service.maintenance = false
+	client.fetch_config({}, func(_result: Dictionary): pass)
+	d.step("server recovery clears the maintenance gate", runtime.sdk.is_under_maintenance() == false and main.gameplay_ready.call())
 	d.end()
 	d.begin("link-logout-recover-and-delete", ["account_save", "platform_end_to_end", "settings_support"])
 	d.step("account management", await tap("account") and await tap("account_manage"))
