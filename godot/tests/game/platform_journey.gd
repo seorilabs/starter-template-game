@@ -65,6 +65,7 @@ func run() -> void:
 	d.step("open identifiers with buttons", await tap("account") and await tap("account_identifiers"))
 	d.expect_equal("confirmed UID", b("identity_uid").text, "UID  " + original_uid)
 	d.expect_equal("confirmed PUID", b("identity_platformUserId").text, "PUID  puid-" + original_uid)
+	d.step("copy UID before support", await tap("copy_uid"))
 	d.step("copy support code", await tap("copy") and main.support.code == "STRT-TEST")
 	await d.shot("server-identifiers")
 	d.step("return to title", await tap("close"))

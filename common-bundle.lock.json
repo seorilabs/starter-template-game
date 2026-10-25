@@ -8,7 +8,7 @@
   ],
   "source": {
     "repository": "https://github.com/seorilabs/game-foundation",
-    "commit": "161da806f75ce547a8667aff8bb98b2a352f1b0c"
+    "commit": "75fd9d261b086718f4966b462f73a4d60cdb4f1a"
   },
   "sdk": {
     "version": "1.1.0",
@@ -17,7 +17,7 @@
   },
   "files": {
     "godot/addons/seorilabs_game/README.md": "2ce602f3589121852640b4e4a14f2d43d92a0d796f5e70aa05c3774025ed97fb",
-    "godot/addons/seorilabs_game/flow/outgame_main.gd": "bcecab64276ee4da7f7aabf2637f97f77c9b2489ad0c32a9a91af259ad72650c",
+    "godot/addons/seorilabs_game/flow/outgame_main.gd": "5d044cb38968a35db4fd39115053972002bf73be8ebff7341e2ecfbca027a221",
     "godot/addons/seorilabs_game/flow/popup_queue.gd": "b3469b799ce654c4a489346dc2dd329cb91aff2213bad8a892dbbda6ba558bf3",
     "godot/addons/seorilabs_game/flow/state.gd": "c4f37aff8775ce5799f4f3d31f785e4f8a9bdc64b3619df6d652c52b4c933e5f",
     "godot/addons/seorilabs_game/fonts/Fredoka-OFL.txt": "5c9e7eee5c6b25f4b05b8d53b2e470ea4962f9ced742d044a98f7d95d1375bab",

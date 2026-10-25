@@ -708,6 +708,7 @@ func _draw_support() -> void:
 	var value := LineEdit.new()
 	value.name = "support_code"
 	value.editable = false
+	value.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	value.text = support.code if not support.code.is_empty() else tr_text("Checking…", "확인 중…") if support.status == "checking" else "—"
 	value.add_theme_font_override("font", _variable_font("res://addons/seorilabs_game/fonts/NotoSansMono.ttf", 500))
 	value.add_theme_font_size_override("font_size", _ui_font_size(21))
