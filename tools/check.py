@@ -50,11 +50,11 @@ def main():
         commands = [[godot, '--headless', '--path', str(project), '--import', '--quit-after', '2'],
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/outgame_contract_probe.gd'],
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/ui_standard_contract_probe.gd', '--', '--out', str(out / 'ui-contract.json')],
-                    [godot, *([] if a.capture else ['--headless']), '--path', str(project), '--script', script, '--', '--out', str(out), '--size', a.size, *(['--capture'] if a.capture else [])]]
+                    [godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', script, '--', '--out', str(out), '--size', a.size, *(['--capture'] if a.capture else [])]]
         if (project / 'tests/game/core_probe.gd').is_file():
             commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/core_probe.gd'])
         if kind == 'reference':
-            commands.append([godot, *([] if a.capture else ['--headless']), '--path', str(project), '--script', 'res://tests/reference/ui_navigation_probe.gd', '--', '--out', str(out / 'navigation'), *(['--capture'] if a.capture else [])])
+            commands.append([godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', 'res://tests/reference/ui_navigation_probe.gd', '--', '--out', str(out / 'navigation'), *(['--capture'] if a.capture else [])])
         head = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
         env = {**os.environ, 'GITHUB_SHA': head}
         for i, command in enumerate(commands):

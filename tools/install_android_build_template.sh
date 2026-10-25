@@ -10,8 +10,11 @@ else
 fi
 archive="$templates/android_source.zip"
 [ -f "$archive" ] || { echo "Godot $version export templates are required." >&2; exit 1; }
-if [ ! -f "$project/android/build/gradlew" ]; then
+if [ -f "$project/android/build/gradlew" ]; then
+  [ -f "$project/android/.build_version" ] && [ "$(cat "$project/android/.build_version")" = "$version" ] || { echo "Android build template version does not match $version; install the matching template in Godot." >&2; exit 1; }
+else
   mkdir -p "$project/android/build"
   unzip -q "$archive" -d "$project/android/build"
   touch "$project/android/.gdignore"
+  printf '%s\n' "$version" > "$project/android/.build_version"
 fi
