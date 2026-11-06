@@ -62,7 +62,7 @@ func attach(owner: Control, options: Dictionary, boundaries: Dictionary = {}) ->
 		if owner.accounts.status != "busy": owner.accounts.refresh())
 	owner.resource_provider = func() -> String:
 		var ticket := str(commerce.wallet.get("starter_test_ticket_1", "—")) if commerce.wallet_status == "verified" else "—"
-		return "★ %d    🎟 %s" % [int(owner.state.data.get("coins", 0)), ticket]
+		return "%d    🎟 %s" % [int(owner.state.data.get("coins", 0)), ticket]
 	owner.feature_routes.operations = func() -> void: _operations(owner)
 
 func _refresh_inventory(owner: Control) -> void:
