@@ -804,9 +804,31 @@ func _submit_result() -> void:
 func _draw_result() -> void:
 	screen = "result"
 	_clear(tr_text("Expedition complete", "원정 완료"))
+	# 가로 화면은 아래에 빈 띠가 없어 왼쪽 버튼 열(3)과 오른쪽 연출 열(2)로 나눈다. 세로는 버튼 아래 넓은 영역에 연출한다.
+	var wide := size.x > size.y
+	var column: Node = content
+	if wide:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 16)
+		row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		content.add_child(row)
+		var left := VBoxContainer.new()
+		left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		left.size_flags_stretch_ratio = 3.0
+		left.add_theme_constant_override("separation", content.get_theme_constant("separation"))
+		left.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(left)
+		var stage := Control.new()
+		stage.name = "reward_stage"
+		stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stage.size_flags_stretch_ratio = 2.0
+		stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(stage)
+		column = left
 	var headline := _label(reward_text, 28)
 	headline.name = "reward_text"
-	content.add_child(headline)
+	column.add_child(headline)
 	# 같은 보상을 순위 갱신 등으로 다시 그릴 때는 연출을 반복하지 않는다.
 	if _reward_presented != _reward_serial:
 		_reward_presented = _reward_serial
@@ -818,14 +840,14 @@ func _draw_result() -> void:
 			var icon: String = str(_skin_data.get("icons", {}).get("coin", ""))
 			if not icon.is_empty():
 				reward.icon = load(skin_dir.path_join(icon))
-		# 넓은 화면은 결과 버튼이 중앙을 차지하므로 제목 없이 아래 빈 띠에, 세로는 버튼 아래 넓은 영역에 연출한다.
-		var wide := size.x > size.y
-		ceremony.present([reward], "" if wide else tr_text("Reward", "보상"), null, null, 0, 0, Vector2(0.5, 0.86 if wide else 0.62))
-	if ranking.status == "submitting": content.add_child(_label(tr_text("Your score is being checked", "점수를 확인하고 있어요")))
-	if ranking.status == "submitted": content.add_child(_label(tr_text("Score accepted, rankings may update shortly", "점수를 접수했어요. 순위 반영까지 잠시 걸릴 수 있어요.")))
-	if ranking.status == "failed": _button(tr_text("Retry score submission", "점수 다시 보내기"), _submit_result).name = "submit_retry"
-	_button(tr_text("Continue", "계속"), _finish_result, null, true).name = "reward_continue"
-	if ranking.available(): _button(tr_text("View leaderboard", "순위 보기"), func() -> void: _open("leaderboard")).name = "result_leaderboard"
+		# 가로는 오른쪽 연출 열의 중심(내용 폭의 0.8), 세로는 버튼 아래 넓은 영역에 연출한다.
+		var focus := Vector2((content.global_position.x + content.size.x * 0.8) / maxf(size.x, 1.0), 0.55) if wide else Vector2(0.5, 0.62)
+		ceremony.present([reward], "" if wide else tr_text("Reward", "보상"), null, null, 0, 0, focus)
+	if ranking.status == "submitting": column.add_child(_label(tr_text("Your score is being checked", "점수를 확인하고 있어요")))
+	if ranking.status == "submitted": column.add_child(_label(tr_text("Score accepted, rankings may update shortly", "점수를 접수했어요. 순위 반영까지 잠시 걸릴 수 있어요.")))
+	if ranking.status == "failed": _button(tr_text("Retry score submission", "점수 다시 보내기"), _submit_result, column).name = "submit_retry"
+	_button(tr_text("Continue", "계속"), _finish_result, column, true).name = "reward_continue"
+	if ranking.available(): _button(tr_text("View leaderboard", "순위 보기"), func() -> void: _open("leaderboard"), column).name = "result_leaderboard"
 
 func _finish_result() -> void:
 	popups.dismiss()

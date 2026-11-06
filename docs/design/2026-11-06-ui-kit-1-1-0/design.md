@@ -7,7 +7,7 @@
 
 ## 목적·범위·근거
 
-이 템플릿으로 만든 새 게임은 공통 묶음 1.0.0을 쓰기 때문에 첫 빌드가 코드로 칠한 `StyleBoxFlat`, 서체 1종, 즉시 뜨는 화면, 무음 버튼으로 시작한다. game-foundation #11이 같은 재료를 `ui_kit`으로 기반에 넣었고(계약 1.1.0, main `06f2519f232f1d6332bfca39cf2fb05262f615d1`, 가로 보정 #13 뒤 `bc21978f4f5a4ea0d3cdd0ff4be516fbc43a0fa2`), 적용 전 기반은 필수 재료 게이트 8항목 전부 FAIL, 적용 뒤 전부 PASS였다. 템플릿을 1.1.0으로 올리면 새 게임이 설치만으로 재료를 받는다.
+이 템플릿으로 만든 새 게임은 공통 묶음 1.0.0을 쓰기 때문에 첫 빌드가 코드로 칠한 `StyleBoxFlat`, 서체 1종, 즉시 뜨는 화면, 무음 버튼으로 시작한다. game-foundation #11이 같은 재료를 `ui_kit`으로 기반에 넣었고(계약 1.1.0, main `06f2519f232f1d6332bfca39cf2fb05262f615d1`, 가로 보정 #13·#15 뒤 `17984c9603c10a69498cb2464413b86932437cc9`), 적용 전 기반은 필수 재료 게이트 8항목 전부 FAIL, 적용 뒤 전부 PASS였다. 템플릿을 1.1.0으로 올리면 새 게임이 설치만으로 재료를 받는다.
 
 | 구분 | 내용 |
 |---|---|
@@ -31,7 +31,7 @@
 
 - 공통 묶음(`godot/addons/seorilabs_game/**`, `godot/tests/common/**`)은 game-foundation 원본을 그대로 설치하고 수정하지 않는다. 기반 `outgame_main.gd`가 테마·효과음·HUD 층·보상 연출을 연결한다.
 - 템플릿 코드가 바꾸는 것: `godot/game/features/home/home.gd`(라벨 `DisplayLabel`, 버튼 `PrimaryButton` 변형), `godot/game/features/sample_round/sample_round.gd`(보상 payload `amount`), `godot/tests/game/outgame_journey.gd`(캡처 3장 추가), `godot/data/outgame/outgame-profile.json`, `docs/qa/feature-inventory.json`, `tools/` 사본 3개.
-- 의존: game-foundation 로컬 체크아웃에서 `python3 tools/bundle.py pack --commit bc21978f4f5a4ea0d3cdd0ff4be516fbc43a0fa2`(#13 가로 보정 병합 커밋)로 만든 묶음. 잠금 `source.commit`은 이 SHA다. 1차 후보 `9217328`은 `06f2519` 묶음이었고 독립 검수 1·2회차가 공통 묶음 결함으로 실패해 #13으로 고쳤다.
+- 의존: game-foundation 로컬 체크아웃에서 `python3 tools/bundle.py pack --commit 17984c9603c10a69498cb2464413b86932437cc9`(#15 가로 보정 v2 병합 커밋)로 만든 묶음. 잠금 `source.commit`은 이 SHA다. 1차 후보 `9217328`은 `06f2519` 묶음이었고 독립 검수 1·2회차가 공통 묶음 결함으로 실패해 #13으로 고쳤다. 2차 후보 `3ccc4a1`(#13 묶음 `bc21978`)은 4회차가 겹침 2건으로 실패하고 5·6회차는 통과했으며 #15로 고쳤다.
 
 ## 데이터·인터페이스·실패 처리
 
@@ -59,13 +59,13 @@
 
 | 조건 ID | 관찰할 동작·통과 기준 | 테스트 방법·환경 | 격리 데이터·시작 상태 | 기대 결과 | 증거 |
 |---|---|---|---|---|---|
-| AC-1 | 잠금이 1.1.0이고 `source.commit`이 `bc21978…`, `bundle.py verify` 통과, 1.0.0 위 설치 허용·역방향 거부 테스트 통과 | `python3 tools/bundle.py verify`, `python3 -m unittest discover -s tools -p 'test_bundle.py'` | 새 체크아웃 | 통과 | PR 로그 |
+| AC-1 | 잠금이 1.1.0이고 `source.commit`이 `17984c9…`, `bundle.py verify` 통과, 1.0.0 위 설치 허용·역방향 거부 테스트 통과 | `python3 tools/bundle.py verify`, `python3 -m unittest discover -s tools -p 'test_bundle.py'` | 새 체크아웃 | 통과 | PR 로그 |
 | AC-2 | 필수 재료 8항목 PASS | `ui_gate.py --root . --project godot --out docs/game-design/ui/gate-report.json` | — | 8 PASS, 예외 0 | gate-report.json |
 | AC-3 | `npm test` 통과(단위, native, `check.py` 여정과 `ui_kit_probe`), `validate_outgame.py` 통과 | 개발 환경 headless | 여정이 만드는 격리 저장 | 모두 통과 | CI 실행 URL |
 | AC-4 | 보상 연출이 기대→충격→정착 순서로 돌고 저장 코인이 10, 스킵 뒤 홈 복귀 | 여정 `reward-impact`·`reward-settle` 캡처, probe | 격리 저장 | 캡처 3장, coins 10 | e2e 보고 |
 | AC-5 | 홈의 주 행동(가로 캠프 홈 `play`)이 `PrimaryButton` 변형이고 `godot/game/`에 `StyleBoxFlat` 없음. 템플릿 `home.gd`의 ▶는 세로 프로필 전용 경로라 정적으로만 확인 | 여정 검사와 grep | — | 통과 | e2e 보고 |
 | AC-6 | `init_game.py`가 1.1.0 잠금에서 그대로 동작 | `python3 -m unittest discover -s tools -p 'test_init_game.py'` | 임시 복제 | 통과 | 로그 |
-| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 568x320(1·3회차), 1024x600(2회차) 캡처로 통과. v1의 844x390·390x844·320x568은 아래 '기존 문제'로 제외 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/2026-11-06-ui-kit-review-{1,2,3}.md` |
+| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 568x320·1024x600·568x320 캡처로 통과. 후보가 바뀔 때마다 새 3회를 돌리고 실패 회차 기록은 보존한다(1~3회차 후보 9217328, 4~6회차 후보 3ccc4a1, 7~9회차 현재 후보). v1의 844x390·390x844·320x568은 아래 '기존 문제'로 제외 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/2026-11-06-ui-kit-review-{1,2,3}.md` |
 
 - `validate_outgame.py`는 `tools/check.py`가 여정 보고로 만든 `evidence.automated`를 넣어 호출하며 통과했다. 저장소의 프로필은 증거를 비워 두므로 단독 실행은 설계대로 `unverified`다.
 - TDD 대상: `test_bundle.py`(1.1.0 설치·역방향 거부)는 foundation 사본이 먼저 실패 후 통과한다. 여정의 `reward-impact`·`reward-settle`·`popup-open` 단계와 `PrimaryButton` 검사는 전환 전 실패(캡처 없음·변형 없음), 전환 후 통과한다. 테마·효과음 자체는 기반 `ui_kit_probe`가 검사하므로 템플릿에 중복 테스트를 두지 않는다.

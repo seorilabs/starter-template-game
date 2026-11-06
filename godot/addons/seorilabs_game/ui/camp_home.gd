@@ -101,6 +101,13 @@ func _layout() -> void:
 			# 캠프의 모든 버튼은 56px 이상의 터치 영역을 가진다. (+)는 상점이 있을 때만 보인다.
 			node.get_node("Row/Add").custom_minimum_size = Vector2(56, 56)
 			node.get_node("Row/Value").add_theme_font_size_override("font_size", maxi(16, roundi(entry.font * scale_factor)) + (2 if controller.state.data.get("settings", {}).get("large_text", false) else 0))
+			# 내용이 자리 폭(370 설계 px)보다 넓으면(긴 재화 문자열) 칩을 축소해 헤드라인 자리와 겹치지 않게 한다. 최소 크기는 다음 프레임에 갱신된다.
+			var slot := rect.size.x * scale_factor
+			node.scale = Vector2.ONE
+			(func() -> void:
+				if not is_instance_valid(node): return
+				var have := maxf(node.size.x, node.get_combined_minimum_size().x)
+				node.scale = Vector2.ONE * minf(1.0, slot / maxf(have, 1.0))).call_deferred()
 			continue
 		node.size = rect.size * scale_factor
 		node.add_theme_font_size_override("font_size", maxi(16 if entry.has("button") else 11, roundi(entry.font * scale_factor)) + (2 if controller.state.data.get("settings", {}).get("large_text", false) else 0))

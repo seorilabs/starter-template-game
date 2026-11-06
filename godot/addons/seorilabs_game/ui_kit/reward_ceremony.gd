@@ -36,7 +36,8 @@ func present(items: Array, headline := "", target: Control = null, counter: Labe
 		card.modulate.a = 0.0
 		cards.append(card)
 	# 연출 열이 화면 아래로 넘치지 않게 초점을 위로 당긴다(가로 작은 화면의 결과 화면).
-	var needed: float = $Stage/Column.get_combined_minimum_size().y + 16.0
+	# 48px 여유: 팝업 프레임 그림의 하단 테두리(backing 12 + 테두리 띠 34) 위에 글자 외곽선이 올라타지 않는다.
+	var needed: float = $Stage/Column.get_combined_minimum_size().y + 48.0
 	if $Stage.offset_top > size.y - needed:
 		$Stage.offset_top = maxf(size.y - needed, 0.0)
 	phase = "anticipation"
