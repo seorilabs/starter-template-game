@@ -10,6 +10,9 @@ import tarfile
 from pathlib import Path, PurePosixPath
 
 ROOTS = ('godot/addons/seorilabs_game', 'godot/addons/seorilabs_platform', 'godot/tests/common')
+# 1.1.0은 ui_kit(테마·모션·효과음·HUD 층·보상 연출)을 더한 하위 호환 묶음이다. 1.0.0 묶음 위에 설치할 수 있고 그 반대는 거부한다.
+VERSIONS = ('1.0.0', '1.1.0')
+CURRENT = '1.1.0'
 REPOSITORY = 'https://github.com/seorilabs/game-foundation'
 
 def sha(data):
@@ -23,7 +26,7 @@ def permitted(name):
     return not p.is_absolute() and '..' not in p.parts and any(name.startswith(r + '/') for r in ROOTS)
 
 def validate_manifest(lock):
-    if lock.get('version') != '1.0.0' or lock.get('roots') != list(ROOTS):
+    if lock.get('version') not in VERSIONS or lock.get('roots') != list(ROOTS):
         raise ValueError('invalid bundle contract')
     source = lock.get('source', {})
     if source.get('repository') != REPOSITORY or not re.fullmatch(r'[0-9a-f]{40}', source.get('commit', '')):
@@ -65,7 +68,7 @@ def pack(root, commit, out):
         if Path(name).suffix in ('.uid', '.import'):
             continue
         payload[name] = git(root, 'cat-file', 'blob', oid)
-    lock = {'schemaVersion': 1, 'version': '1.0.0', 'roots': list(ROOTS),
+    lock = {'schemaVersion': 1, 'version': CURRENT, 'roots': list(ROOTS),
             'source': {'repository': REPOSITORY, 'commit': commit},
             'sdk': {'version': '1.1.0', 'archiveSha256': '77a1dd4ce627f93f9bbe716924202c3c93c047f3cf4bdd59c05294cbc950ec5c',
                     'source': 'https://github.com/seorilabs/platform/releases/tag/v1.1.0'},
@@ -94,6 +97,8 @@ def install(root, bundle):
     old = json.loads(old_path.read_text()) if old_path.exists() else None
     if old:
         verify(root, old)
+        if VERSIONS.index(lock['version']) < VERSIONS.index(old['version']):
+            raise ValueError('bundle downgrade refused: %s -> %s' % (old['version'], lock['version']))
     else:
         for folder in ROOTS:
             if (root / folder).exists() and any((root / folder).iterdir()):

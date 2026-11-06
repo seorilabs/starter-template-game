@@ -45,6 +45,6 @@ func _collect() -> void:
 	if not host.state.action_completed("reward_collected"):
 		host._show_error(host.state.error)
 		return
-	host.popups.enqueue("reward", {"text": host.tr_text("Practice complete", "연습 완료") if host.state.data.tutorial.replay else "+%d coins" % (host.state.data.coins - before)})
+	host.popups.enqueue("reward", {"text": host.tr_text("Practice complete", "연습 완료") if host.state.data.tutorial.replay else "+%d coins" % (host.state.data.coins - before), "amount": host.state.data.coins - before})
 	host._show_next_popup()
 

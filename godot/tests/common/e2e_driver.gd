@@ -154,9 +154,12 @@ func scroll_into_view(control: Control, max_drags := 30) -> bool:
 
 
 # 렌더링 모드에서만 장면을 PNG로 남긴다. headless에서는 아무것도 하지 않는다.
-func shot(name: String) -> void:
+## settle가 참이면 진입 모션이 끝난 뒤(약 0.3초) 찍는다. 모션 중간 프레임이 필요하면 false로 바로 찍는다.
+func shot(name: String, settle := true) -> void:
 	if not capture:
 		return
+	if settle:
+		await frames(20)
 	# Draw this offscreen viewport even when macOS pauses an occluded window.
 	RenderingServer.force_draw(false)
 	var path := out_dir.path_join("%s.png" % name)
@@ -213,7 +216,11 @@ func _axis_move(view_start: float, view_size: float, start: float, size: float) 
 	var center := start + size / 2.0
 	var hidden: bool
 	if size <= view_size:
-		hidden = start < view_start or start + size > view_start + view_size
+		# Global Rect2 edges can differ after their float32 coordinates are added
+		# as GDScript floats. Treat approximately equal edges as visible.
+		var above := start < view_start and not is_equal_approx(start, view_start)
+		var below := start + size > view_start + view_size and not is_equal_approx(start + size, view_start + view_size)
+		hidden = above or below
 	else:
 		# 끝 경계는 입력 영역에 들지 않는다(Rect2.has_point). 중심이 끝 경계에 있으면 아직 가려진 것으로 본다.
 		hidden = center < view_start or center >= view_start + view_size

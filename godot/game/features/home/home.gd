@@ -9,12 +9,13 @@ func _ready() -> void:
  var label := Label.new()
  label.text = "★  →  ★  →  ★" if profile == "map" else "★  ★  ★"
  label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
- label.add_theme_font_size_override("font_size", 30)
+ label.theme_type_variation = "DisplayLabel"
  label.size_flags_vertical = Control.SIZE_EXPAND_FILL
  row.add_child(label)
  var play := Button.new()
  play.text = "▶"
  play.tooltip_text = "Play"
+ play.theme_type_variation = "PrimaryButton"
  play.custom_minimum_size.y = 48
  play.pressed.connect(begin)
  row.add_child(play)
