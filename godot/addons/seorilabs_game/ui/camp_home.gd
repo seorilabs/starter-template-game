@@ -19,8 +19,9 @@ func _ready() -> void:
 	var status: String = controller.tr_text("Account connected", "계정 연결됨") if connected else controller.tr_text("Connect your account", "계정을 연결해 주세요")
 	if not controller.accounts.error.is_empty(): status = controller._error_text(controller.accounts.error)
 	_text(status, Rect2(32, 182, 480, 44), 22, Color("244c53"))
-	var resources: String = str(controller.resource_provider.call()) if controller.resource_provider.is_valid() else "★  %d" % int(controller.state.data.get("coins", 0))
-	_text(resources, Rect2(32, 244, 370, 76), 32, Color("fff8e5"))
+	# 재화는 평문 라벨이 아니라 재화 칩(아이콘·숫자·(+), 보상 비행 목표)으로 둔다.
+	var chip: Control = controller._currency_chip(self)
+	_placements.append({"node": chip, "rect": Rect2(32, 244, 370, 76), "font": 32, "chip": true})
 	var account := _button(controller.tr_text("My account", "내 계정"), "account_hud", Rect2(772, 26, 328, 128), func() -> void: controller._open("account"), "account")
 	account.tooltip_text = str(controller.accounts.details.get("uid", controller.tr_text("UID appears after connecting", "연결 후 UID 표시")))
 	_button("", "settings", Rect2(1120, 26, 128, 128), func() -> void: controller._open("settings"), "settings")
@@ -94,6 +95,13 @@ func _layout() -> void:
 		var node: Control = entry.node
 		var rect: Rect2 = entry.rect
 		node.position = origin + rect.position * scale_factor
+		if entry.has("chip"):
+			# 칩은 내용 크기로 두고 숫자 글자만 배율에 맞춘다.
+			node.size = Vector2.ZERO
+			# 캠프의 모든 버튼은 56px 이상의 터치 영역을 가진다. (+)는 상점이 있을 때만 보인다.
+			node.get_node("Row/Add").custom_minimum_size = Vector2(56, 56)
+			node.get_node("Row/Value").add_theme_font_size_override("font_size", maxi(16, roundi(entry.font * scale_factor)) + (2 if controller.state.data.get("settings", {}).get("large_text", false) else 0))
+			continue
 		node.size = rect.size * scale_factor
 		node.add_theme_font_size_override("font_size", maxi(16 if entry.has("button") else 11, roundi(entry.font * scale_factor)) + (2 if controller.state.data.get("settings", {}).get("large_text", false) else 0))
 		if not entry.has("button"):

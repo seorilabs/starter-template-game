@@ -96,7 +96,7 @@ func run() -> void:
   main = await mount_game(store.path, home)
   d.step(home + " start", await d.tap(b(main, "start")) and main.screen == "home")
   await d.shot(home)
-  d.step(home + " play is primary skin", b(main, "play") != null and b(main, "play").theme_type_variation == &"PrimaryButton")
+  d.step(home + " home play action is primary skin", b(main, "play") != null and b(main, "play").theme_type_variation == &"PrimaryButton")
   d.step(home + " playable", await d.tap(b(main, "play")) and main.screen == "play")
   await d.unmount(main)
  d.end()

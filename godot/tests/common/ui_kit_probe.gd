@@ -117,6 +117,21 @@ func _check_reward(reduced: bool) -> void:
 	ceremony.skip()
 	ceremony.queue_free()
 	await process_frame
+	# 가로 568x320처럼 낮은 화면에서 초점이 아래쪽(0.86)이어도 연출 열이 화면 밖으로 나가지 않는다.
+	var low: Control = RewardCeremony.instantiate()
+	host.add_child(low)
+	low.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	low.size = Vector2(568, 320)
+	# 실제 결과 화면처럼 아이콘(64px)이 있는 카드가 기준이다.
+	low.present([{"icon": load("res://addons/seorilabs_game/skins/soft_adventure/icon_coin.svg"), "amount": 10, "label": "coins"}], "", null, null, 0, 0, Vector2(0.5, 0.86))
+	await process_frame
+	await process_frame
+	var column: Control = low.get_node("Stage/Column")
+	var bounds: Rect2 = low.get_global_rect()
+	check(column.get_global_rect().end.y <= bounds.end.y + 0.5 and column.get_global_rect().position.y >= bounds.position.y - 0.5, "reward %s: low focus keeps the column on a 320px screen (column end %d)" % [_mode(reduced), int(column.get_global_rect().end.y)])
+	low.skip()
+	low.queue_free()
+	await process_frame
 
 func _check_sfx() -> void:
 	var panel := Control.new()

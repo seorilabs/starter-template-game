@@ -37,6 +37,6 @@
  {
   "item": "currency_chip",
   "status": "PASS",
-  "evidence": "kit=['tests/common/ui_kit_probe.gd', 'addons/seorilabs_game/flow/outgame_main.gd', 'addons/seorilabs_game/ui_kit/currency_chip.tscn'] structural=[]"
+  "evidence": "kit=['tests/common/ui_kit_probe.gd', 'addons/seorilabs_game/ui/camp_home.gd', 'addons/seorilabs_game/flow/outgame_main.gd'] structural=[]"
  }
 ]

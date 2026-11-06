@@ -23,6 +23,8 @@ const RewardCeremony = preload("res://addons/seorilabs_game/ui_kit/reward_ceremo
 @export var studio_name := "Seorilabs"
 @export var home_profile := "hero"
 @export var lobby_art: Texture2D
+## 제품 스킨 폴더(skin.json, 9분할 svg, theme.tres). 비우면 기반 soft_adventure를 쓴다. 묶음 파일을 고치지 않고 제품이 외형을 바꾸는 자리다.
+@export var skin_dir: String = ThemeBuilder.DEFAULT_SKIN
 @export var custom_theme: Theme
 var stage_factory: Callable
 var launch_game: Callable
@@ -211,9 +213,9 @@ func _apply_settings() -> void:
 		theme = custom_theme
 	else:
 		# 스킨 테마는 skin.json에서 조립한 theme.tres다. 언어와 큰 글자는 역할 서체·크기만 바꾼다.
-		_skin_data = ThemeBuilder.load_skin()
-		var built: Theme = load(ThemeBuilder.DEFAULT_SKIN.path_join("theme.tres"))
-		theme = built.duplicate(true) if built != null else ThemeBuilder.build(ThemeBuilder.DEFAULT_SKIN, language())
+		_skin_data = ThemeBuilder.load_skin(skin_dir)
+		var built: Theme = load(skin_dir.path_join("theme.tres")) if ResourceLoader.exists(skin_dir.path_join("theme.tres")) else null
+		theme = built.duplicate(true) if built != null else ThemeBuilder.build(skin_dir, language())
 		ThemeBuilder.localize(theme, _skin_data, language(), _ui_font_size)
 	if layers != null:
 		layers.apply_theme(theme)
@@ -273,8 +275,12 @@ func _clear(title: String) -> void:
 		child.queue_free()
 	backing.visible = screen not in ["title", "home"]
 	if landscape:
-		for side in ["left", "right", "top", "bottom"]:
-			_content_margin.add_theme_constant_override("margin_" + side, 0 if screen in ["title", "home"] else roundi(16 * _ui_scale()))
+		# 내용은 프레임 그림의 테두리 안쪽(backing 여백 12 + 스킨 content 여백)보다 안에 둔다. 높이 320에서 16px만 띄우면 하단 테두리와 겹친다.
+		var frame: StyleBox = backing.get_theme_stylebox("panel")
+		var sides := {"left": SIDE_LEFT, "right": SIDE_RIGHT, "top": SIDE_TOP, "bottom": SIDE_BOTTOM}
+		for side in sides:
+			var inset := maxf(16 * _ui_scale(), 12 + frame.get_content_margin(sides[side]))
+			_content_margin.add_theme_constant_override("margin_" + side, 0 if screen in ["title", "home"] else roundi(inset))
 	background.visible = home_profile == "hero" or screen != "home"
 	if screen in ["title", "home"]:
 		return
@@ -342,8 +348,8 @@ func _currency_chip(parent: Node) -> Control:
 	parent.add_child(chip)
 	var icon: String = str(_skin_data.get("icons", {}).get("coin", ""))
 	if not icon.is_empty():
-		chip.set_icon(load(ThemeBuilder.DEFAULT_SKIN.path_join(icon)))
-	var shown: Variant = resource_provider.call() if resource_provider.is_valid() else state.data.coins
+		chip.set_icon(load(skin_dir.path_join(icon)))
+	var shown: Variant = resource_provider.call() if resource_provider.is_valid() else int(state.data.get("coins", 0))
 	if shown is int or shown is float:
 		chip.set_value(int(shown), false)
 	else:
@@ -811,7 +817,7 @@ func _draw_result() -> void:
 			reward.label = tr_text("coins", "코인")
 			var icon: String = str(_skin_data.get("icons", {}).get("coin", ""))
 			if not icon.is_empty():
-				reward.icon = load(ThemeBuilder.DEFAULT_SKIN.path_join(icon))
+				reward.icon = load(skin_dir.path_join(icon))
 		# 넓은 화면은 결과 버튼이 중앙을 차지하므로 제목 없이 아래 빈 띠에, 세로는 버튼 아래 넓은 영역에 연출한다.
 		var wide := size.x > size.y
 		ceremony.present([reward], "" if wide else tr_text("Reward", "보상"), null, null, 0, 0, Vector2(0.5, 0.86 if wide else 0.62))

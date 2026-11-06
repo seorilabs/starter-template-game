@@ -35,6 +35,10 @@ func present(items: Array, headline := "", target: Control = null, counter: Labe
 		$Stage/Column/Items.add_child(card)
 		card.modulate.a = 0.0
 		cards.append(card)
+	# 연출 열이 화면 아래로 넘치지 않게 초점을 위로 당긴다(가로 작은 화면의 결과 화면).
+	var needed: float = $Stage/Column.get_combined_minimum_size().y + 16.0
+	if $Stage.offset_top > size.y - needed:
+		$Stage.offset_top = maxf(size.y - needed, 0.0)
 	phase = "anticipation"
 	if not headline.is_empty():
 		Juice.pop_in($Stage/Column/Headline, timings.anticipation, 0.6)
