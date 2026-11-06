@@ -99,7 +99,7 @@ def validate(root, profile, stage='implementation', require_ui_standard=False):
         if not isinstance(standard, dict):
             fail('missing_ui_standard', 'uiStandard object')
         else:
-            if standard.get('version') != '1.0.0' or standard.get('homeProfile') not in ('hero', 'map', 'world') or standard.get('skin') != 'soft-adventure':
+            if standard.get('version') not in ('1.0.0', '1.1.0') or standard.get('homeProfile') not in ('hero', 'map', 'world') or standard.get('skin') != 'soft-adventure':
                 fail('missing_ui_standard', 'version/homeProfile/skin')
             if not isinstance(standard.get('locales'), list) or not standard['locales'] or any(v not in ('en', 'ko') for v in standard['locales']):
                 fail('missing_ui_standard', 'bundled locales')

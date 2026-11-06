@@ -11,6 +11,12 @@ const Commerce = preload("res://addons/seorilabs_game/services/commerce.gd")
 const Accounts = preload("res://addons/seorilabs_game/services/accounts.gd")
 const AccountPanel = preload("res://addons/seorilabs_game/ui/account_panel.gd")
 const CampHome = preload("res://addons/seorilabs_game/ui/camp_home.gd")
+const ThemeBuilder = preload("res://addons/seorilabs_game/ui_kit/theme_builder.gd")
+const Juice = preload("res://addons/seorilabs_game/ui_kit/juice.gd")
+const UiSfx = preload("res://addons/seorilabs_game/ui_kit/ui_sfx.gd")
+const HudLayers = preload("res://addons/seorilabs_game/ui_kit/hud_layers.tscn")
+const CurrencyChip = preload("res://addons/seorilabs_game/ui_kit/currency_chip.tscn")
+const RewardCeremony = preload("res://addons/seorilabs_game/ui_kit/reward_ceremony.tscn")
 @export var landscape := false
 @export var game_title := "Game"
 @export var game_title_ko := "Game"
@@ -60,6 +66,12 @@ var config: Dictionary = {"appId": "", "privacy_url": "", "terms_url": "", "anal
 var _view := 0
 var _font_title: Font
 var _font_body: Font
+var sfx: Node
+var layers: Node
+var ceremony: Control
+var _reward_serial := 0
+var _reward_presented := 0
+var _skin_data: Dictionary = {}
 var palette: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://addons/seorilabs_game/skins/soft_adventure/skin.json"))
 
 func _variable_font(path: String, weight: int) -> Font:
@@ -140,7 +152,6 @@ func _ready() -> void:
 	backing.offset_top = 12
 	backing.offset_bottom = -12
 	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	backing.add_theme_stylebox_override("panel", _skin(Color(palette.panel), Color("9b9478"), 18))
 	add_child(backing)
 	var margin := MarginContainer.new()
 	_content_margin = margin
@@ -153,6 +164,12 @@ func _ready() -> void:
 	content.add_theme_constant_override("separation", 6 if size.y < 500 else 10)
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(content)
+	sfx = UiSfx.attach(self)
+	layers = HudLayers.instantiate()
+	add_child(layers)
+	ceremony = RewardCeremony.instantiate()
+	ceremony.sfx = sfx
+	layers.layer("Popup").add_child(ceremony)
 	accounts.changed.connect(_accounts_changed)
 	feature_routes.account_manage = func() -> void: AccountPanel.manage(self)
 	feature_routes.account_recovery = func() -> void: AccountPanel.recovery(self)
@@ -188,39 +205,18 @@ func _skin(color: Color, border: Color, radius: int = 10) -> StyleBoxFlat:
 	return skin
 
 func _apply_settings() -> void:
-	theme = Theme.new()
-	theme.default_font = _font_body
-	theme.default_font_size = _ui_font_size(16)
 	_font_title = load("res://addons/seorilabs_game/fonts/Jua.ttf") if language() == "ko" else _variable_font("res://addons/seorilabs_game/fonts/Fredoka.ttf", 650)
-	theme.set_color("font_color", "Label", Color(palette.text))
-	for cls in ["Button", "CheckButton"]:
-		theme.set_color("font_color", cls, Color(palette.text))
-		theme.set_color("font_hover_color", cls, Color(palette.text))
-		theme.set_color("font_pressed_color", cls, Color(palette.text))
-		theme.set_color("font_focus_color", cls, Color(palette.text))
-		theme.set_color("font_hover_pressed_color", cls, Color(palette.text))
-		theme.set_color("font_disabled_color", cls, Color("6d7c79"))
-		theme.set_stylebox("normal", cls, _skin(Color("fff8e5"), Color("94b3a6")))
-		theme.set_stylebox("hover", cls, _skin(Color("e8efdb"), Color("56847c")))
-		theme.set_stylebox("pressed", cls, _skin(Color("d1dfc3"), Color("3b6e71")))
-		theme.set_stylebox("disabled", cls, _skin(Color("e1e4d7"), Color("c2c9b9")))
-		var focus := _skin(Color.TRANSPARENT, Color("286778"))
-		focus.set_border_width_all(3)
-		theme.set_stylebox("focus", cls, focus)
-		if landscape:
-			theme.set_font("font", cls, _font_title)
-			for state_name in ["normal", "hover", "pressed", "disabled"]:
-				var fill := Color("ffeec5")
-				if state_name == "pressed": fill = fill.darkened(0.14)
-				elif state_name == "hover": fill = fill.lightened(0.12)
-				elif state_name == "disabled": fill = Color("bdc9bb")
-				var material := _skin(fill, Color("87967a"), 12)
-				material.shadow_color = Color("986c42")
-				material.shadow_size = 2
-				material.shadow_offset = Vector2(0, 3 if state_name != "pressed" else 1)
-				theme.set_stylebox(state_name, cls, material)
-	theme.set_color("font_uneditable_color", "LineEdit", Color(palette.text))
-	theme.set_stylebox("read_only", "LineEdit", _skin(Color("fff8e5"), Color("94b3a6")))
+	Juice.reduced_motion = bool(state.data.get("settings", {}).get("reduced_motion", false))
+	if custom_theme != null:
+		theme = custom_theme
+	else:
+		# 스킨 테마는 skin.json에서 조립한 theme.tres다. 언어와 큰 글자는 역할 서체·크기만 바꾼다.
+		_skin_data = ThemeBuilder.load_skin()
+		var built: Theme = load(ThemeBuilder.DEFAULT_SKIN.path_join("theme.tres"))
+		theme = built.duplicate(true) if built != null else ThemeBuilder.build(ThemeBuilder.DEFAULT_SKIN, language())
+		ThemeBuilder.localize(theme, _skin_data, language(), _ui_font_size)
+	if layers != null:
+		layers.apply_theme(theme)
 	for pair in [["Music", "music"], ["SFX", "sfx"]]:
 		var index := AudioServer.get_bus_index(pair[0])
 		if index == -1:
@@ -228,8 +224,6 @@ func _apply_settings() -> void:
 			index = AudioServer.bus_count - 1
 			AudioServer.set_bus_name(index, pair[0])
 		AudioServer.set_bus_mute(index, not state.data.settings[pair[1]])
-	if custom_theme != null:
-		theme = custom_theme
 	analytics.policy_allowed = bool(config.get("analytics_policy_allowed", false))
 	analytics.apply(state)
 
@@ -271,6 +265,9 @@ func _notification(what: int) -> void:
 
 func _clear(title: String) -> void:
 	_view += 1
+	# 결과 화면을 같은 보상으로 다시 그릴 때는 진행 중인 연출을 유지하고, 다른 화면으로 가면 멈춘다.
+	if ceremony != null and screen != "result":
+		ceremony.skip()
 	for child in content.get_children():
 		content.remove_child(child)
 		child.queue_free()
@@ -281,6 +278,11 @@ func _clear(title: String) -> void:
 	background.visible = home_profile == "hero" or screen != "home"
 	if screen in ["title", "home"]:
 		return
+	# 프레임만 커지며 나타나고 내용은 페이드만 한다. 내용 좌표를 바꾸지 않아 초점·스크롤 계산이 흔들리지 않는다.
+	Juice.pop_in(backing, 0.22, 0.94)
+	if not Juice.reduced_motion:
+		_content_margin.modulate.a = 0.0
+		_content_margin.create_tween().tween_property(_content_margin, "modulate:a", 1.0, 0.16)
 	header = _label(title, 25)
 	header.add_theme_font_override("font", _font_title if _font_title != null else _font_body)
 	var top := HBoxContainer.new()
@@ -288,14 +290,14 @@ func _clear(title: String) -> void:
 	content.add_child(top)
 	var back := _button("‹", _back, top)
 	back.name = "back"
-	back.custom_minimum_size.x = 56 * _ui_scale() if landscape else 44
+	back.custom_minimum_size.x = 56 * _ui_scale() if landscape else 52
 	back.size_flags_horizontal = Control.SIZE_FILL
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	top.add_child(header)
 	var close := _button("×", _close, top)
 	close.name = "close"
-	close.custom_minimum_size.x = 56 * _ui_scale() if landscape else 44
+	close.custom_minimum_size.x = 56 * _ui_scale() if landscape else 52
 	close.size_flags_horizontal = Control.SIZE_FILL
 
 func _label(text: String, size: int = 16) -> Label:
@@ -318,22 +320,36 @@ func _ui_font_size(value: int) -> int:
 func _button(text: String, action: Callable, parent: Node = null, primary: bool = false) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# 한두 글자 아이콘 버튼은 줄바꿈 없이 최소 폭을 확보한다. 그림 스킨의 내용 여백이 글자를 밀어내지 않게 한다.
+	button.autowrap_mode = TextServer.AUTOWRAP_OFF if text.length() <= 2 else TextServer.AUTOWRAP_WORD_SMART
 	button.custom_minimum_size.y = 56 * _ui_scale() if landscape else 48
-	button.custom_minimum_size.x = 80
+	button.custom_minimum_size.x = 80 if text.length() > 2 else 52
 	button.mouse_filter = Control.MOUSE_FILTER_PASS
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(action)
+	button.button_down.connect(func() -> void: Juice.press_punch(button))
 	if primary:
-		button.add_theme_font_override("font", _font_title if _font_title != null else _font_body)
-		button.add_theme_font_size_override("font_size", _ui_font_size(22))
-		var skin := _skin(Color(palette.primary), Color("aa8036"), 12)
-		skin.shadow_color = Color("8e6425")
-		skin.shadow_size = 2
-		skin.shadow_offset = Vector2(0, 3)
-		button.add_theme_stylebox_override("normal", skin)
+		button.theme_type_variation = "PrimaryButton"
+		button.set_meta("ui_sfx_kind", "confirm")
 	(parent if parent != null else content).add_child(button)
 	return button
+
+## 홈 재화 칩. resource_provider가 정수를 주면 카운트업 값으로, 문자열을 주면 그대로 표시하고, 없으면 코인 수를 쓴다.
+func _currency_chip(parent: Node) -> Control:
+	var chip := CurrencyChip.instantiate()
+	chip.name = "coins"
+	chip.show_add = commerce.available()
+	parent.add_child(chip)
+	var icon: String = str(_skin_data.get("icons", {}).get("coin", ""))
+	if not icon.is_empty():
+		chip.set_icon(load(ThemeBuilder.DEFAULT_SKIN.path_join(icon)))
+	var shown: Variant = resource_provider.call() if resource_provider.is_valid() else state.data.coins
+	if shown is int or shown is float:
+		chip.set_value(int(shown), false)
+	else:
+		chip.set_text(str(shown))
+	chip.add_pressed.connect(func() -> void: _open("shop"))
+	return chip
 
 func _spacer() -> void:
 	var spacer := Control.new()
@@ -504,17 +520,15 @@ func _home() -> void:
 		return
 	var hud := HBoxContainer.new()
 	content.add_child(hud)
-	var coins := _label("● %d    ◆ 20" % state.data.coins, 20)
-	coins.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var resource_panel := PanelContainer.new()
-	resource_panel.add_theme_stylebox_override("panel", _skin(Color("fff5d7"), Color("8ca99d")))
-	resource_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hud.add_child(resource_panel)
-	resource_panel.add_child(coins)
+	_currency_chip(hud)
+	var hud_space := Control.new()
+	hud_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud_space.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(hud_space)
 	var settings_button := _button("☰", func() -> void: _open("settings"), hud)
 	settings_button.name = "settings"
 	settings_button.tooltip_text = tr_text("Settings", "설정")
-	settings_button.custom_minimum_size.x = 44
+	settings_button.custom_minimum_size.x = 52
 	settings_button.size_flags_horizontal = Control.SIZE_FILL
 	var actions := HBoxContainer.new()
 	content.add_child(actions)
@@ -537,7 +551,6 @@ func _home() -> void:
 		content.add_child(hero)
 	var target := _label(tr_text(home_text.destination[0], home_text.destination[1]), 16)
 	var goal := PanelContainer.new()
-	goal.add_theme_stylebox_override("panel", _skin(Color("fff8e5"), Color("9baa89")))
 	content.add_child(goal)
 	goal.add_child(target)
 	_button(tr_text(home_text.action[0], home_text.action[1]), func() -> void: _open("play"), null, true).name = "play"
@@ -552,9 +565,11 @@ func _compact_home() -> void:
 	background.visible = false
 	var hud := HBoxContainer.new()
 	content.add_child(hud)
-	var coins := _label("● %d    ◆ 20" % state.data.coins, 18)
-	coins.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hud.add_child(coins)
+	_currency_chip(hud)
+	var hud_space := Control.new()
+	hud_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hud_space.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(hud_space)
 	_button(tr_text("Inbox", "우편"), func() -> void: _open("inbox"), hud).name = "inbox"
 	if ranking.available(): _button(tr_text("Rank", "순위"), func() -> void: _open("leaderboard"), hud).name = "leaderboard"
 	_button(tr_text("Settings", "설정"), func() -> void: _open("settings"), hud).name = "settings"
@@ -783,7 +798,23 @@ func _submit_result() -> void:
 func _draw_result() -> void:
 	screen = "result"
 	_clear(tr_text("Expedition complete", "원정 완료"))
-	content.add_child(_label(reward_text, 28))
+	var headline := _label(reward_text, 28)
+	headline.name = "reward_text"
+	content.add_child(headline)
+	# 같은 보상을 순위 갱신 등으로 다시 그릴 때는 연출을 반복하지 않는다.
+	if _reward_presented != _reward_serial:
+		_reward_presented = _reward_serial
+		var item: Dictionary = popups.current.get("payload", {})
+		var reward := {"label": reward_text}
+		if int(item.get("amount", 0)) > 0:
+			reward.amount = int(item.amount)
+			reward.label = tr_text("coins", "코인")
+			var icon: String = str(_skin_data.get("icons", {}).get("coin", ""))
+			if not icon.is_empty():
+				reward.icon = load(ThemeBuilder.DEFAULT_SKIN.path_join(icon))
+		# 넓은 화면은 결과 버튼이 중앙을 차지하므로 제목 없이 아래 빈 띠에, 세로는 버튼 아래 넓은 영역에 연출한다.
+		var wide := size.x > size.y
+		ceremony.present([reward], "" if wide else tr_text("Reward", "보상"), null, null, 0, 0, Vector2(0.5, 0.86 if wide else 0.62))
 	if ranking.status == "submitting": content.add_child(_label(tr_text("Your score is being checked", "점수를 확인하고 있어요")))
 	if ranking.status == "submitted": content.add_child(_label(tr_text("Score accepted, rankings may update shortly", "점수를 접수했어요. 순위 반영까지 잠시 걸릴 수 있어요.")))
 	if ranking.status == "failed": _button(tr_text("Retry score submission", "점수 다시 보내기"), _submit_result).name = "submit_retry"
@@ -1061,6 +1092,7 @@ func _history() -> void:
 func _show_next_popup() -> void:
 	var item: Dictionary = popups.next()
 	if item.is_empty(): return
+	_reward_serial += 1
 	reward_text = str(item.payload.get("text", ""))
 	screen = "result"
 	_submit_result()

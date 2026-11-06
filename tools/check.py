@@ -50,6 +50,7 @@ def main():
         commands = [[godot, '--headless', '--path', str(project), '--import', '--quit-after', '2'],
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/outgame_contract_probe.gd'],
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/ui_standard_contract_probe.gd', '--', '--out', str(out / 'ui-contract.json')],
+                    [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/ui_kit_probe.gd', '--', '--out', str(out / 'ui-kit.json')],
                     [godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', script, '--', '--out', str(out), '--size', a.size, *(['--capture'] if a.capture else [])]]
         if (project / 'tests/game/core_probe.gd').is_file():
             commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/core_probe.gd'])
@@ -84,7 +85,7 @@ def main():
         missing = (set(gate.REQUIRED + gate.UI_CHECKS) | {f['id'] for f in inventory['features'] if f.get('core')}) - covered
         if missing: raise ValueError('missing feature journeys: ' + str(missing))
         checks = {n: True for n in gate.REQUIRED + gate.UI_CHECKS}
-        checks.update({'contract_probe': True, 'bundle_hashes': True, 'architecture': True})
+        checks.update({'contract_probe': True, 'ui_kit_probe': True, 'bundle_hashes': True, 'architecture': True})
         report = {'kind': 'automated', 'passed': True, 'sourceSha': head,
                   'recordedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                   'implementationFingerprint': gate.fingerprint(root, profile), 'checks': checks,

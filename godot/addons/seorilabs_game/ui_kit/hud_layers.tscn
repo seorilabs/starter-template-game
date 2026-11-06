@@ -1,0 +1,78 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/seorilabs_game/ui_kit/hud_layers.gd" id="1"]
+
+[node name="HudLayers" type="Node"]
+script = ExtResource("1")
+
+[node name="World" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="Root" type="Control" parent="World"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Hud" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Root" type="Control" parent="Hud"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Popup" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Root" type="Control" parent="Popup"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Toast" type="CanvasLayer" parent="."]
+layer = 30
+
+[node name="Root" type="Control" parent="Toast"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Ftue" type="CanvasLayer" parent="."]
+layer = 40
+
+[node name="Root" type="Control" parent="Ftue"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="System" type="CanvasLayer" parent="."]
+layer = 50
+
+[node name="Root" type="Control" parent="System"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

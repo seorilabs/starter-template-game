@@ -1,8 +1,24 @@
 {
   "id": "soft-adventure",
-  "contract": "1.0.0",
+  "contract": "1.1.0",
   "background": "#f1ecdc",
   "panel": "#fff9eb",
   "text": "#244e5c",
-  "primary": "#f6d072"
+  "primary": "#f6d072",
+  "textures": {
+    "button_primary": {"normal": "ui_button_primary_normal.svg", "pressed": "ui_button_primary_pressed.svg", "disabled": "ui_button_primary_disabled.svg", "margins": [20, 18, 20, 22], "content": [20, 10, 20, 14], "minimum": [64, 48]},
+    "button_secondary": {"normal": "ui_button_secondary_normal.svg", "pressed": "ui_button_secondary_pressed.svg", "disabled": "ui_button_primary_disabled.svg", "margins": [18, 16, 18, 20], "content": [16, 8, 16, 12], "minimum": [56, 44]},
+    "panel": {"normal": "ui_panel.svg", "margins": [22, 22, 22, 24], "content": [16, 12, 16, 14], "minimum": [48, 48]},
+    "popup_frame": {"normal": "ui_popup_frame.svg", "margins": [30, 30, 30, 34], "content": [20, 18, 20, 22], "minimum": [64, 64]},
+    "chip": {"normal": "ui_chip.svg", "margins": [20, 12, 20, 14], "content": [10, 4, 10, 6], "minimum": [48, 36]}
+  },
+  "icons": {"coin": "icon_coin.svg"},
+  "fonts": {
+    "display_en": "res://addons/seorilabs_game/fonts/Fredoka.ttf",
+    "display_ko": "res://addons/seorilabs_game/fonts/Jua.ttf",
+    "body": "res://addons/seorilabs_game/fonts/NotoSansKR.ttf",
+    "number": "res://addons/seorilabs_game/fonts/NotoSansMono.ttf"
+  },
+  "sizes": {"body": 16, "label": 14, "title": 24, "display": 34, "action": 22, "number": 18},
+  "motion": {"press_punch_ms": 100, "pop_in_ms": 220, "pop_out_ms": 140, "reward_anticipation_ms": 400, "reward_impact_ms": 200, "reward_settle_ms": 500, "count_up_ms": 600, "toast_ms": 2000}
 }

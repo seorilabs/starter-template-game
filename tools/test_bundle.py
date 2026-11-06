@@ -10,7 +10,7 @@ import bundle
 class BundleTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name)
+        self.root = Path(self.tmp.name).resolve()
         self.lock = {'version': '1.0.0', 'roots': list(bundle.ROOTS),
                      'source': {'repository': bundle.REPOSITORY, 'commit': 'a' * 40},
                      'files': {r + '/one.gd': bundle.sha(b'original') for r in bundle.ROOTS}}
@@ -51,5 +51,24 @@ class BundleTests(unittest.TestCase):
         p = self.root / next(iter(self.lock['files'])); p.write_text('user work')
         with self.assertRaisesRegex(ValueError, 'modified'): bundle.install(self.root, payload)
         self.assertEqual('user work', p.read_text())
+
+    def _archive(self, lock, data=b'original'):
+        payload = self.root / ('bundle-%s.tar.gz' % lock['version'])
+        with tarfile.open(payload, 'w:gz') as t:
+            for name, body in {'common-bundle.lock.json': json.dumps(lock).encode(), **{n: data for n in lock['files']}}.items():
+                item = tarfile.TarInfo(name); item.size = len(body); t.addfile(item, io.BytesIO(body))
+        return payload
+
+    def test_contract_1_1_0_installs_over_1_0_0_and_downgrade_refused(self):
+        newer = copy.deepcopy(self.lock); newer['version'] = '1.1.0'
+        newer['files'][bundle.ROOTS[0] + '/ui_kit/juice.gd'] = bundle.sha(b'original')
+        bundle.validate_manifest(newer)
+        installed = bundle.install(self.root, self._archive(newer))
+        self.assertEqual('1.1.0', installed['version'])
+        self.assertTrue((self.root / bundle.ROOTS[0] / 'ui_kit/juice.gd').is_file())
+        with self.assertRaisesRegex(ValueError, 'downgrade'): bundle.install(self.root, self._archive(self.lock))
+        self.assertEqual('1.1.0', json.loads((self.root / 'common-bundle.lock.json').read_text())['version'])
+        unknown = copy.deepcopy(self.lock); unknown['version'] = '2.0.0'
+        with self.assertRaises(ValueError): bundle.validate_manifest(unknown)
 
 if __name__ == '__main__': unittest.main()

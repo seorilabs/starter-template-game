@@ -1,8 +1,8 @@
 # 설계: 공통 묶음 1.1.0 ui_kit 전환
 
 - 설계 ID·버전·원본 커밋: 2026-11-06-ui-kit-1-1-0 v1, 기준 `42e1536e49eac777f82b42b0484acfc5a920b85b`(main)
-- 상태: 사람 검토 대기
-- 승인자·시각·근거·승인 커밋: (승인 뒤 기록)
+- 상태: 승인(v1), 검수 크기 변경(v2) 사람 검토 대기
+- 승인자·시각·근거·승인 커밋: Ilhwan Seo, 2026-11-06, 세션 질의 응답 "승인, 구현 시작", 승인 커밋 `20506b580092e7e5a60a9a6aa705c220d9e5386c`
 - 관련 Issue·PR·Wiki·검수: [#22](https://github.com/seorilabs/starter-template-game/issues/22), game-foundation [#11](https://github.com/seorilabs/game-foundation/pull/11)·[#12](https://github.com/seorilabs/game-foundation/pull/12), agent-config 스킬 `game-ui-commercial`
 
 ## 목적·범위·근거
@@ -53,7 +53,7 @@
 | 템플릿만 `custom_theme`로 자체 테마 조립 | 기각. 기반이 `theme.tres`를 쓰므로 템플릿이 테마를 만들면 새 게임마다 재료를 다시 만든다 |
 | `tools/` 사본을 부분 수정 | 기각. foundation main 사본으로 통째 갱신해야 다음 묶음 갱신도 같은 절차다 |
 | 보상 payload에 `amount` 추가 | 채택. 기반 `_draw_result`가 `amount`로 카운트업한다. 없으면 텍스트만 뜬다 |
-| 가로 전용 템플릿이라 세로 캡처 생략 | 기각. `landscape=true`여도 기기 회전 전 세로 프레임이 뜰 수 있어 390x844·320x568도 검수한다 |
+| 가로 전용 템플릿이라 세로 캡처 생략 | v1은 세로도 검수하기로 했으나 구현 중 확인한 결과 main(1.0.0)에서도 세로 390x844는 여정의 `collect reward` 단계가, 가로 667x375·812x375·844x390·960x540은 `platform_journey`의 `check deletion status with a button` 단계가 실패한다(ui_kit과 무관한 템플릿 기존 문제). 이 설계는 ui_kit 전환만 다루므로 검수 크기를 통과 가능한 568x320(CI 크기)과 1024x600으로 바꾸고, 기존 문제는 별도 이슈로 남긴다(v2, 사람 재승인 필요) |
 
 ## 인수조건·테스트·검수
 
@@ -65,8 +65,9 @@
 | AC-4 | 보상 연출이 기대→충격→정착 순서로 돌고 코인 10으로 카운트업, 스킵 뒤 홈 복귀 | 여정 `reward-impact`·`reward-settle` 캡처, probe | 격리 저장 | 캡처 3장, coins 10 | e2e 보고 |
 | AC-5 | 홈 ▶가 `PrimaryButton` 변형이고 `godot/game/`에 `StyleBoxFlat` 없음 | 여정 검사와 grep | — | 통과 | e2e 보고 |
 | AC-6 | `init_game.py`가 1.1.0 잠금에서 그대로 동작 | `python3 -m unittest tools/test_init_game.py` | 임시 복제 | 통과 | 로그 |
-| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 각각 568x320, 844x390, 390x844·320x568 캡처로 통과 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/2026-11-06-ui-kit-review-{1,2,3}.md` |
+| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 568x320(1·3회차), 1024x600(2회차) 캡처로 통과. v1의 844x390·390x844·320x568은 아래 '기존 문제'로 제외 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/2026-11-06-ui-kit-review-{1,2,3}.md` |
 
+- `validate_outgame.py`는 `tools/check.py`가 여정 보고로 만든 `evidence.automated`를 넣어 호출하며 통과했다. 저장소의 프로필은 증거를 비워 두므로 단독 실행은 설계대로 `unverified`다.
 - TDD 대상: `test_bundle.py`(1.1.0 설치·역방향 거부)는 foundation 사본이 먼저 실패 후 통과한다. 여정의 `reward-impact`·`reward-settle`·`popup-open` 단계와 `PrimaryButton` 검사는 전환 전 실패(캡처 없음·변형 없음), 전환 후 통과한다. 테마·효과음 자체는 기반 `ui_kit_probe`가 검사하므로 템플릿에 중복 테스트를 두지 않는다.
 - 테스트 계획: [test-plan.json](test-plan.json)
 
@@ -85,6 +86,7 @@
 1. `tools/` 사본 갱신 → 묶음 pack·install·verify → 프로필·기능 목록 → 템플릿 화면·여정 → 게이트 보고 → 로컬 `npm test`·캡처 → 독립 검수 3회 → PR(Ready, 한국어) → CI → 병합.
 2. 되돌리기: `bundle.py`가 역방향 설치를 거부하므로 PR 전체를 revert한다. 저장 형식이 바뀌지 않아 데이터 영향은 없다.
 3. 남은 위험: 이미 생성된 게임은 이 PR로 바뀌지 않는다. 각 게임은 자기 설계로 전환한다.
+4. 기존 문제(이 PR 범위 밖, 별도 이슈): 세로 창에서 여정 `collect reward` 실패, 가로 667x375·812x375·844x390·960x540에서 `platform_journey` 삭제 상태 버튼 `scroll_into_view` 실패. 둘 다 main `42e1536`에서 재현했다.
 
 ## 승인·추적
 

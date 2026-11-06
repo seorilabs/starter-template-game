@@ -107,18 +107,5 @@ func _layout() -> void:
 			icon.size = Vector2(44, 44) * scale_factor
 			icon.position = Vector2((node.size.x - icon.size.x) / 2, node.size.y * 0.12)
 		var primary: bool = entry.primary
-		for state in ["normal", "hover", "pressed", "disabled"]:
-			var fill := Color("ffe5a9") if primary else Color("ffeec5")
-			if state == "pressed": fill = fill.darkened(0.14)
-			elif state == "hover": fill = fill.lightened(0.12)
-			elif state == "disabled": fill = Color("b9c9b9")
-			var skin: StyleBoxFlat = controller._skin(fill, Color("6f7960"), maxi(8, roundi(22 * scale_factor)))
-			skin.content_margin_left = 8 * scale_factor
-			skin.content_margin_right = 8 * scale_factor
-			skin.content_margin_top = 4 * scale_factor
-			skin.content_margin_bottom = 4 * scale_factor
-			skin.shadow_color = Color("986c42")
-			skin.shadow_size = maxi(2, roundi(5 * scale_factor))
-			skin.shadow_offset = Vector2(0, 8 * scale_factor if state != "pressed" else 2 * scale_factor)
-			node.add_theme_stylebox_override(state, skin)
+		node.theme_type_variation = "PrimaryButton" if primary else ""
 		node.add_theme_constant_override("icon_max_width", maxi(20, roundi(44 * scale_factor)))
