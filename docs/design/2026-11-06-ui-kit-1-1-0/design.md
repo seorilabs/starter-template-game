@@ -65,7 +65,7 @@
 | AC-4 | 보상 연출이 기대→충격→정착 순서로 돌고 저장 코인이 10, 스킵 뒤 홈 복귀 | 여정 `reward-impact`·`reward-settle` 캡처, probe | 격리 저장 | 캡처 3장, coins 10 | e2e 보고 |
 | AC-5 | 홈의 주 행동(가로 캠프 홈 `play`)이 `PrimaryButton` 변형이고 `godot/game/`에 `StyleBoxFlat` 없음. 템플릿 `home.gd`의 ▶는 세로 프로필 전용 경로라 정적으로만 확인 | 여정 검사와 grep | — | 통과 | e2e 보고 |
 | AC-6 | `init_game.py`가 1.1.0 잠금에서 그대로 동작 | `python3 -m unittest discover -s tools -p 'test_init_game.py'` | 임시 복제 | 통과 | 로그 |
-| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 568x320·1024x600·568x320 캡처로 통과. 후보가 바뀔 때마다 새 3회를 돌리고 실패 회차 기록은 보존한다(1~3회차 후보 9217328, 4~6회차 후보 3ccc4a1, 7~9회차 현재 후보). v1의 844x390·390x844·320x568은 아래 '기존 문제'로 제외 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/2026-11-06-ui-kit-review-{1,2,3}.md` |
+| AC-7 | 독립 검수 3회(기능·UX, 모든 기능)가 568x320·1024x600·568x320 캡처로 통과. 후보가 바뀔 때마다 새 3회를 돌리고 실패 회차 기록은 보존한다(1~3회차 후보 9217328, 4~6회차 후보 3ccc4a1, 7~9회차 현재 후보). v1의 844x390·390x844·320x568은 아래 '기존 문제'로 제외 | 구현자와 다른 에이전트가 `check.py --capture --size …` 실행 후 기록 | 격리 저장 | 3회 모두 pass | `docs/qa/ui-kit-review/round-{1..9}.md`(7~9회차가 현재 후보의 통과 3회) |
 
 - `validate_outgame.py`는 `tools/check.py`가 여정 보고로 만든 `evidence.automated`를 넣어 호출하며 통과했다. 저장소의 프로필은 증거를 비워 두므로 단독 실행은 설계대로 `unverified`다.
 - TDD 대상: `test_bundle.py`(1.1.0 설치·역방향 거부)는 foundation 사본이 먼저 실패 후 통과한다. 여정의 `reward-impact`·`reward-settle`·`popup-open` 단계와 `PrimaryButton` 검사는 전환 전 실패(캡처 없음·변형 없음), 전환 후 통과한다. 테마·효과음 자체는 기반 `ui_kit_probe`가 검사하므로 템플릿에 중복 테스트를 두지 않는다.
@@ -86,7 +86,8 @@
 1. `tools/` 사본 갱신 → 묶음 pack·install·verify → 프로필·기능 목록 → 템플릿 화면·여정 → 게이트 보고 → 로컬 `npm test`·캡처 → 독립 검수 3회 → PR(Ready, 한국어) → CI → 병합.
 2. 되돌리기: `bundle.py`가 역방향 설치를 거부하므로 PR 전체를 revert한다. 저장 형식이 바뀌지 않아 데이터 영향은 없다.
 3. 남은 위험: 이미 생성된 게임은 이 PR로 바뀌지 않는다. 각 게임은 자기 설계로 전환한다.
-4. 기존 문제(이 PR 범위 밖, 별도 이슈): 세로 창에서 여정 `collect reward` 실패, 가로 667x375·812x375·844x390·960x540에서 `platform_journey` 삭제 상태 버튼 `scroll_into_view` 실패. 둘 다 main `42e1536`에서 재현했다.
+4. 후속(공통 묶음, 낮음): 568x320에서 긴 재화 문자열로 칩이 0.66배로 축소되면 (+) 버튼 터치 영역이 약 37px가 된다(9회차 N-3). 상점 버튼이 대체 경로라 차단하지 않으며 game-foundation 후속 이슈로 남긴다.
+5. 기존 문제(이 PR 범위 밖, 별도 이슈): 세로 창에서 여정 `collect reward` 실패, 가로 667x375·812x375·844x390·960x540에서 `platform_journey` 삭제 상태 버튼 `scroll_into_view` 실패. 둘 다 main `42e1536`에서 재현했다.
 
 ## 승인·추적
 
