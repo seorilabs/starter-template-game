@@ -1,8 +1,8 @@
 # 설계: 공통 묶음 1.1.0 ui_kit 전환
 
 - 설계 ID·버전·원본 커밋: 2026-11-06-ui-kit-1-1-0 v1, 기준 `42e1536e49eac777f82b42b0484acfc5a920b85b`(main)
-- 상태: 승인(v1), 검수 크기 변경(v2) 사람 검토 대기
-- 승인자·시각·근거·승인 커밋: Ilhwan Seo, 2026-11-06, 세션 질의 응답 "승인, 구현 시작", 승인 커밋 `20506b580092e7e5a60a9a6aa705c220d9e5386c`
+- 상태: 승인(v2)
+- 승인자·시각·근거·승인 커밋: Ilhwan Seo, 2026-11-06, 세션 질의 응답 "승인, 구현 시작", 승인 커밋 `20506b580092e7e5a60a9a6aa705c220d9e5386c`. v2(검수 크기 568x320·1024x600, 기존 문제 별도 이슈) 2026-11-06 같은 방식으로 승인
 - 관련 Issue·PR·Wiki·검수: [#22](https://github.com/seorilabs/starter-template-game/issues/22), game-foundation [#11](https://github.com/seorilabs/game-foundation/pull/11)·[#12](https://github.com/seorilabs/game-foundation/pull/12), agent-config 스킬 `game-ui-commercial`
 
 ## 목적·범위·근거
@@ -53,7 +53,7 @@
 | 템플릿만 `custom_theme`로 자체 테마 조립 | 기각. 기반이 `theme.tres`를 쓰므로 템플릿이 테마를 만들면 새 게임마다 재료를 다시 만든다 |
 | `tools/` 사본을 부분 수정 | 기각. foundation main 사본으로 통째 갱신해야 다음 묶음 갱신도 같은 절차다 |
 | 보상 payload에 `amount` 추가 | 채택. 기반 `_draw_result`가 `amount`로 카운트업한다. 없으면 텍스트만 뜬다 |
-| 가로 전용 템플릿이라 세로 캡처 생략 | v1은 세로도 검수하기로 했으나 구현 중 확인한 결과 main(1.0.0)에서도 세로 390x844는 여정의 `collect reward` 단계가, 가로 667x375·812x375·844x390·960x540은 `platform_journey`의 `check deletion status with a button` 단계가 실패한다(ui_kit과 무관한 템플릿 기존 문제). 이 설계는 ui_kit 전환만 다루므로 검수 크기를 통과 가능한 568x320(CI 크기)과 1024x600으로 바꾸고, 기존 문제는 별도 이슈로 남긴다(v2, 사람 재승인 필요) |
+| 가로 전용 템플릿이라 세로 캡처 생략 | v1은 세로도 검수하기로 했으나 구현 중 확인한 결과 main(1.0.0)에서도 세로 390x844는 여정의 `collect reward` 단계가, 가로 667x375·812x375·844x390·960x540은 `platform_journey`의 `check deletion status with a button` 단계가 실패한다(ui_kit과 무관한 템플릿 기존 문제). 이 설계는 ui_kit 전환만 다루므로 검수 크기를 통과 가능한 568x320(CI 크기)과 1024x600으로 바꾸고, 기존 문제는 별도 이슈로 남긴다(v2, 2026-11-06 승인) |
 
 ## 인수조건·테스트·검수
 
