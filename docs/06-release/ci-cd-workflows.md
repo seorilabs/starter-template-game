@@ -7,7 +7,7 @@
 | 파일 | 트리거 | 역할 | 러너 |
 |---|---|---|---|
 | `godot-checks.yml` | push/PR→main, dispatch | import→compile→smoke + core/architecture/docs | ARC(private)/ubuntu |
-| `deploy-godot-pages.yml` | push→main, dispatch | Godot Web export + Pages(웹 채널) | ARC/ubuntu |
+| `deploy-godot-pages.yml` | dispatch | Godot Web export + Pages(웹 플레이테스트, `playtest` 기능 태그) | ARC/ubuntu |
 | `release-tag.yml` | dispatch | 명시적 SemVer 태그 | ARC |
 | `deploy-google-play.yml` | dispatch, call | Godot 서명 AAB + Google Play | ubuntu |
 | `deploy-app-store.yml` | dispatch, call | Godot iOS archive + TestFlight 내부 | GitHub-hosted macOS |

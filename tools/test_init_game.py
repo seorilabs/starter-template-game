@@ -22,6 +22,7 @@ class InitializationTests(unittest.TestCase):
             'godot/data/outgame/outgame-profile.json': json.dumps({'gameId':'old','uiStandard':{'homeProfile':'hero'},'evidence':{'old':'stale'}}),
             'godot/project.godot': 'config_version=5\n[application]\nconfig/name="Old"\n',
             'app-store/app-store.config.json': '{"bundleId":"확정 필요"}',
+            'godot/export_presets.cfg': '[preset.4]\nname="macOS"\nplatform="macOS"\n[preset.4.options]\napplication/bundle_identifier="com.seorilabs.startergame"\n',
         }.items():
             p = self.root / name; p.parent.mkdir(parents=True, exist_ok=True); p.write_text(data)
 

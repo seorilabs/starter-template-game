@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate native export identity, signing boundaries and release resource exclusions."""
+"""Validate export identity, signing boundaries and release resource exclusions."""
 import configparser
 import hashlib
 import json
@@ -7,6 +7,12 @@ from pathlib import Path
 import plistlib
 import re
 ROOT=Path(__file__).resolve().parents[1]
+# Web is the playtest preset; every other preset is a release build that must drop test-only files.
+PLAYTEST_PRESET='Web'
+# Preset names equal their Godot platform names.
+RELEASE_PRESETS=['Android','iOS','Windows Desktop','macOS','Linux']
+DESKTOP_PRESETS=['Windows Desktop','macOS','Linux']
+TEST_ROOM='addons/seorilabs_game/dev/**'
 def load_presets(root):
     cfg=configparser.ConfigParser(interpolation=None,strict=True)
     cfg.optionxform=str
@@ -15,6 +21,8 @@ def load_presets(root):
 def value(cfg,section,key):
     try:return json.loads(cfg.get(section,key))
     except (ValueError,configparser.Error):return None
+def items(cfg,section,key):
+    return {x.strip() for x in (value(cfg,section,key) or '').split(',') if x.strip()}
 def validate(root):
     errors=[];cfg=load_presets(root)
     try:
@@ -28,6 +36,7 @@ def validate(root):
         errors.append('Invalid native dependency lock: '+type(error).__name__)
     project=configparser.ConfigParser(interpolation=None);project.optionxform=str;project.read_string('[general]\n'+(root/'godot/project.godot').read_text())
     if value(project,'rendering','textures/vram_compression/import_etc2_astc') is not True:errors.append('Mobile texture import must be enabled for native exports')
+    if value(project,'rendering','textures/vram_compression/import_s3tc_bptc') is not True:errors.append('Desktop texture import must be enabled for desktop exports')
     try:
         product=json.loads((root/'godot/config/product.json').read_text())
         play=json.loads((root/'play-store/google-play.config.json').read_text())
@@ -36,18 +45,34 @@ def validate(root):
     except (OSError,ValueError,plistlib.InvalidFileException) as error:return [str(error)]
     identity=product['id']
     if not re.fullmatch(r'[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+',identity):errors.append('Native product ID must be a reverse-DNS identifier')
-    for platform in ['Android','iOS']:
-        bases=[s for s in cfg.sections() if not s.endswith('.options') and value(cfg,s,'name')==platform]
-        if len(bases)!=1:errors.append('Missing or duplicate native preset: '+platform);continue
+    presets={}
+    for section in cfg.sections():
+        if not section.endswith('.options'):presets.setdefault(value(cfg,section,'name'),[]).append(section)
+    for name in [PLAYTEST_PRESET,*RELEASE_PRESETS]:
+        if len(presets.get(name,[]))!=1:errors.append('Missing or duplicate export preset: '+name)
+    for name,bases in presets.items():
+        for base in bases:
+            exclude=items(cfg,base,'exclude_filter');features=items(cfg,base,'custom_features')
+            if name==PLAYTEST_PRESET:
+                if 'playtest' not in features:errors.append('Web playtest preset must enable the playtest feature')
+                if TEST_ROOM in exclude:errors.append('Web playtest preset must keep '+TEST_ROOM)
+                continue
+            label=str(name)
+            if 'playtest' in features:errors.append(label+' must not enable the playtest feature')
+            for pattern in ['tests/**','game/scenarios/**',TEST_ROOM]:
+                if pattern not in exclude:errors.append(label+' must exclude '+pattern)
+            include=items(cfg,base,'include_filter')
+            for license in ['addons/seorilabs_game/fonts/*-OFL.txt','addons/seorilabs_platform/LICENSE']:
+                if license not in include:errors.append(label+' must retain '+license)
+    for platform in RELEASE_PRESETS:
+        bases=presets.get(platform,[])
+        if len(bases)!=1:continue
         base=bases[0];options=base+'.options'
-        if value(cfg,base,'platform')!=platform:errors.append('Native preset platform mismatch')
+        if value(cfg,base,'platform')!=platform:errors.append(platform+' preset platform mismatch')
+        if platform in DESKTOP_PRESETS:
+            if platform=='macOS' and value(cfg,options,'application/bundle_identifier')!=identity:errors.append('macOS bundle identity mismatch')
+            continue
         if value(cfg,base,'runnable') is not False:errors.append('Native automatic device discovery must stay disabled')
-        exclude=value(cfg,base,'exclude_filter') or ''
-        for pattern in ['tests/**','game/scenarios/**']:
-            if pattern not in exclude.split(','):errors.append(platform+' must exclude '+pattern)
-        include=value(cfg,base,'include_filter') or ''
-        for license in ['addons/seorilabs_game/fonts/*-OFL.txt','addons/seorilabs_platform/LICENSE']:
-            if license not in include.split(','):errors.append(platform+' must retain '+license)
         if platform=='Android':
             if value(cfg,options,'package/unique_name')!=identity or play.get('packageName')!=identity:errors.append('Android package identity mismatch')
             if value(cfg,options,'package/name')!=product['name']:errors.append('Android display name mismatch')
