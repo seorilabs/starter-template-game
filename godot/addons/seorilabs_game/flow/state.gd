@@ -140,6 +140,16 @@ func replay_tutorial() -> bool:
 	next.ui.runId = ""
 	return commit(next)
 
+## 첫 시작 프롤로그를 본 기록. SAVE_VERSION을 올리지 않는 선택 키라 이전 저장도 그대로 열리고, 이전 빌드도 이 저장을 연다.
+func intro_seen() -> bool:
+	var seen: Variant = data.get("intro_seen", false)
+	return seen is bool and seen
+
+func mark_intro_seen() -> bool:
+	var next := data.duplicate(true)
+	next.intro_seen = true
+	return commit(next)
+
 func ensure_run() -> bool:
 	if not str(data.ui.get("runId", "")).is_empty():
 		return true

@@ -98,3 +98,43 @@ static func shake(node: Control, amplitude := 6.0, seconds := 0.3) -> Tween:
 		tween.tween_property(node, "position:x", origin.x + offset, seconds / 7.0)
 	tween.tween_property(node, "position:x", origin.x, seconds / 7.0)
 	return tween
+
+## 상시 모션: 주 버튼이 숨 쉬듯 1.0~scale 사이를 오간다. 노드에 묶인 Tween이라 노드가 사라지면 함께 끝난다.
+static func idle_pulse(node: Control, amount := 1.03, period := 1.6) -> Tween:
+	center_pivot(node)
+	# 레이아웃 전(size 0)에 불려도 크기가 정해지면 축을 가운데로 다시 잡는다.
+	if not node.resized.is_connected(center_pivot.bind(node)):
+		node.resized.connect(center_pivot.bind(node))
+	if reduced_motion:
+		node.scale = Vector2.ONE
+		return _instant(node)
+	var tween := node.create_tween().set_loops()
+	tween.tween_property(node, "scale", Vector2.ONE * amount, period * 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(node, "scale", Vector2.ONE, period * 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	return tween
+
+## 상시 모션: 칩·배지가 아주 작게 숨 쉰다. 컨테이너 안에서도 안전하게 scale만 쓴다(position은 컨테이너가 되돌린다).
+static func float_loop(node: Control, amount := 1.02, period := 2.4) -> Tween:
+	return idle_pulse(node, amount, period)
+
+## 상시 모션: 밝은 띠가 주기적으로 버튼을 가로질러 지나간다(상용 게임의 주 버튼 하이라이트 스윕).
+static func shine(node: Control, period := 3.0, width := 0.18) -> Tween:
+	if reduced_motion:
+		return _instant(node)
+	var band := ColorRect.new()
+	band.name = "Shine"
+	band.color = Color(1, 1, 1, 0.28)
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.clip_contents = false
+	node.clip_contents = true
+	node.add_child(band)
+	if node.size == Vector2.ZERO:
+		await node.get_tree().process_frame
+	band.size = Vector2(node.size.x * width, node.size.y * 2.0)
+	band.rotation_degrees = 18.0
+	band.position = Vector2(-band.size.x * 2.0, -node.size.y * 0.5)
+	var tween := band.create_tween().set_loops()
+	tween.tween_property(band, "position:x", node.size.x + band.size.x, period * 0.35).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_callback(func() -> void: band.position.x = -band.size.x * 2.0)
+	tween.tween_interval(period * 0.65)
+	return tween

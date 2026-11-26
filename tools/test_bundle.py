@@ -71,4 +71,18 @@ class BundleTests(unittest.TestCase):
         unknown = copy.deepcopy(self.lock); unknown['version'] = '2.0.0'
         with self.assertRaises(ValueError): bundle.validate_manifest(unknown)
 
+    def test_contract_1_2_0_installs_over_1_1_0_and_downgrade_refused(self):
+        # 1.2.0은 컷신·크레딧·테스트실을 더한 하위 호환 묶음이다. 1.1.0 위에 설치하고 반대는 거부한다.
+        self.assertEqual('1.2.0', bundle.CURRENT)
+        middle = copy.deepcopy(self.lock); middle['version'] = '1.1.0'
+        bundle.install(self.root, self._archive(middle))
+        newer = copy.deepcopy(middle); newer['version'] = '1.2.0'
+        newer['files'][bundle.ROOTS[0] + '/ui_kit/cutscene_player.gd'] = bundle.sha(b'original')
+        newer['files'][bundle.ROOTS[0] + '/dev/test_room.gd'] = bundle.sha(b'original')
+        installed = bundle.install(self.root, self._archive(newer))
+        self.assertEqual('1.2.0', installed['version'])
+        self.assertTrue((self.root / bundle.ROOTS[0] / 'dev/test_room.gd').is_file())
+        with self.assertRaisesRegex(ValueError, 'downgrade'): bundle.install(self.root, self._archive(middle))
+        self.assertEqual('1.2.0', json.loads((self.root / 'common-bundle.lock.json').read_text())['version'])
+
 if __name__ == '__main__': unittest.main()

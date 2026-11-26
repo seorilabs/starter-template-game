@@ -26,6 +26,8 @@ func set_value(next: int, animate := true) -> void:
 ## 제품이 "★ 12"처럼 조합한 표시 문자열을 그대로 쓴다. 카운트업은 하지 않는다.
 func set_text(text: String) -> void:
 	$Row/Value.text = text
+	# 배치하는 쪽(캠프 홈)이 줄을 나눠 다시 그릴 때 원문을 쓴다.
+	$Row/Value.set_meta("source_text", text)
 
 ## 보상이 날아올 목표 좌표(아이콘 중심).
 func fly_target() -> Vector2:

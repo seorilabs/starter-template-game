@@ -212,14 +212,18 @@ func _write_report(meta := {}) -> void:
 
 
 # 한 축에서 더 끌어야 할 거리(0이면 보임). 멈췄다 놓아 관성이 없으므로 한 번에 목록 크기의 80%까지 움직인다.
+const SUBPIXEL := 1.0
+
 func _axis_move(view_start: float, view_size: float, start: float, size: float) -> float:
 	var center := start + size / 2.0
 	var hidden: bool
 	if size <= view_size:
 		# Global Rect2 edges can differ after their float32 coordinates are added
-		# as GDScript floats. Treat approximately equal edges as visible.
-		var above := start < view_start and not is_equal_approx(start, view_start)
-		var below := start + size > view_start + view_size and not is_equal_approx(start + size, view_start + view_size)
+		# as GDScript floats, and fractional UI scales (56 * 1.17 = 65.6) leave a control
+		# up to a fraction of a pixel past its ScrollContainer's integer content height even
+		# at the scroll limit. Treat overflow under one pixel as visible; a full pixel is still hidden.
+		var above := view_start - start >= SUBPIXEL
+		var below := (start + size) - (view_start + view_size) >= SUBPIXEL
 		hidden = above or below
 	else:
 		# 끝 경계는 입력 영역에 들지 않는다(Rect2.has_point). 중심이 끝 경계에 있으면 아직 가려진 것으로 본다.
