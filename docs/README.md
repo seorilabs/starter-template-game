@@ -11,7 +11,7 @@ Obsidian은 지식베이스와 재사용 가능한 운영 노하우를 보조로
 02-decisions/     # ADR, 장기 의사결정
 03-architecture/  # Clean Architecture, dependency rule
 04-work/          # 작업 로그, backlog
-05-markets/       # Google Play, App Store, AppsInToss, Firebase 원장
+05-markets/       # Google Play, App Store, Steam, Firebase 원장
 06-release/       # 릴리스 후보, 배포 체크리스트
 07-qa/            # 테스트 전략, QA 시나리오
 08-ops/           # GitHub Actions, dependency, runner 운영

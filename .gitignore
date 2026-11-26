@@ -54,7 +54,6 @@ release-artifacts/
 *.aab
 *.ipa
 *.xcarchive
-*.ait
 *.zip
 
 # Logs
@@ -72,7 +71,6 @@ ui-debug.log
 **/*.uid
 **/*.import
 godot/build/
-apps/ait/public/
 
 # Generated native export projects and SDK build cache.
 godot/android/

@@ -6,5 +6,5 @@
 
 - 콘솔 값은 문서와 repo-local config에 반영한다.
 - 모르는 값은 `확정 필요`로 유지한다.
-- 제출, production promotion, AppsInToss production release는 deployment approval 이후만 수행한다.
+- 심사 제출과 production promotion은 deployment approval 이후만 수행한다.
 
