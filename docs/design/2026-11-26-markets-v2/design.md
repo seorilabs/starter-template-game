@@ -3,7 +3,7 @@
 - 설계 ID·버전·원본 커밋: 2026-11-26-markets-v2 v1, 기준 `bcb61a78580f001a33f27c7fb255f5dfc495c30e`(main)
 - 상태: 승인(상위 설계의 starter 범위)
 - 승인자·시각·근거: Ilhwan Seo, 2026-11-26. agent-config 설계 `docs/design/2026-11-26-game-skill-system-v2/design.md`(v1)와 같은 폴더의 `approval.json`을 선택 질문 "승인, 병합까지 진행"으로 승인했다. 그 설계의 "포함" 표 starter 행, "앱인토스 격리" 표, 인수조건 AC-12·AC-15·AC-16과 등급표(starter L3, 개발 환경)가 이 설계의 범위다. 상위 설계는 아직 agent-config에 병합되지 않아 승인 커밋은 그 PR 병합 뒤 적는다.
-- 관련 Issue·PR·검수: PR은 이 설계와 같은 브랜치(`markets-v2`)로 연다. game-foundation 1.2.0 묶음 설치는 별도 후속 단계다.
+- 관련 Issue·PR·검수: PR은 이 설계와 같은 브랜치(`markets-v2`)로 연다. game-foundation 1.2.0 묶음(seorilabs/game-foundation#28, 병합 커밋 `7f3b25d`)도 같은 PR에서 설치한다(2026-11-27 갱신).
 
 ## 목적·범위·근거
 
@@ -12,7 +12,8 @@
 | 구분 | 내용 |
 |---|---|
 | 포함 | 앱인토스 코드(`apps/ait/`, `apps-in-toss/`, `godot/game/adapters/ait_host.gd`), workflow(`deploy-apps-in-toss.yml`, 전체가 앱인토스 배포인 `nightly.yml`), 마켓 문서와 다른 문서·PR 양식·검사 스크립트·초기화 테스트의 언급 삭제. Windows Desktop, macOS, Linux export preset 추가, 데스크톱 텍스처 압축 설정, 출시 preset의 테스트실(`addons/seorilabs_game/dev/**`) 제외와 Web 플레이테스트 preset의 `playtest` 기능 태그, `check_native.py` 정적 검사와 단위 테스트, 출시 대상 문서 |
-| 제외 | game-foundation 1.2.0 묶음 설치(후속 단계), `godot/addons/seorilabs_platform/**`의 `ait` 값과 `tools/validate_outgame.py`의 `apps_in_toss` 값(game-foundation이 소유한 공통 사본이고 기존 게임이 쓴다), Steamworks 등록·SteamPipe 업로드·GodotSteam 연결, PC 해상도·창 모드·키 설정 구현, 이미 생성된 게임의 전환, 마켓 업로드 |
+| 포함(갱신) | game-foundation 1.2.0 묶음 설치. 도구 사본(`bundle.py`, `test_bundle.py`, `validate_outgame.py`) 갱신, `uiStandard.version` 1.2.0, `check.py`의 공용 `dev_probe` 실행. starter는 `test_room_setup`을 두지 않으므로 테스트실·F9·설정 항목이 생기지 않는다 |
+| 제외 | `godot/addons/seorilabs_platform/**`의 `ait` 값과 `tools/validate_outgame.py`의 `apps_in_toss` 값(game-foundation이 소유한 공통 사본이고 기존 게임이 쓴다), Steamworks 등록·SteamPipe 업로드·GodotSteam 연결, PC 해상도·창 모드·키 설정 구현, 이미 생성된 게임의 전환, 마켓 업로드 |
 
 전후 예시: 지금 `npm run init:game`으로 만든 새 게임에는 `apps/ait/host.js`와 `Deploy AppsInToss` workflow가 들어 있고, `godot --export-release "Linux" …`는 preset이 없어 실패한다. 변경 뒤 새 게임에는 앱인토스 파일이 없고 같은 명령이 Linux 실행 파일과 pck를 만든다.
 
@@ -109,7 +110,7 @@
 
 1. 앱인토스 제거 → 데스크톱 preset과 검사(테스트 먼저) → 출시 대상 문서 → 이 설계와 test-plan 순서로 커밋한다. 로컬 `npm test`, 데스크톱 export, 로컬 mcode 리뷰 뒤 한국어 Ready PR을 열고 CI가 통과하면 병합한다.
 2. 되돌리기: PR 전체를 revert한다. 저장 형식과 위치가 바뀌지 않아 데이터 영향은 없다. 앱인토스 파일은 revert로 돌아온다.
-3. 후속 game-foundation 1.2.0 설치: 묶음이 `addons/seorilabs_game/dev/`를 설치하면 이미 들어간 제외 규칙이 출시 preset에서 빼고, Web은 포함한다. 설치 뒤 데스크톱 preset 하나를 `--export-pack`해 테스트실이 빠졌는지, 내보낸 빌드가 빠진 스크립트 오류 없이 시작하는지 다시 본다.
+3. game-foundation 1.2.0 설치(같은 PR): 묶음이 `addons/seorilabs_game/dev/`를 설치하고, 이미 들어간 제외 규칙이 출시 preset에서 빼며 Web은 포함한다. 설치 뒤 데스크톱 preset을 `--export-pack`해 테스트실이 빠졌는지, 내보낸 빌드가 빠진 스크립트 오류 없이 시작하는지 확인한다. 1.2.0 공용 코드는 game-foundation에서 독립 검수 5회(4·5회차는 사용자 승인 추가 회차)를 거쳤고, 3~5회차가 이 브랜치 복사본에 설치한 `npm test`를 확인했다.
 4. 남은 위험: Godot 에디터로 프로젝트를 열면 데스크톱 preset의 생략한 옵션이 기본값으로 채워져 `export_presets.cfg`에 변경이 생길 수 있다. 의미는 같으므로 그 변경을 커밋해도 된다.
 
 ## 승인·추적
