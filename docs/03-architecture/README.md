@@ -8,7 +8,7 @@ flowchart TB
   UseCases["Use cases"]
   Ports["Ports"]
   Adapters["Adapters"]
-  Delivery["Godot / AppsInToss / Store delivery"]
+  Delivery["Godot / Store delivery"]
 
   Domain --> UseCases
   UseCases --> Ports

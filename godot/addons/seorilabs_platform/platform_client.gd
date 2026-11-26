@@ -23,7 +23,7 @@ const AtomicJsonStore := preload("core/atomic_json_store.gd")
 const UpdateGate := preload("core/update_gate.gd")
 
 ## SDK 버전. 이벤트 context와 배포본 VERSION 파일이 같은 값을 사용한다.
-const SDK_VERSION := "1.1.0"
+const SDK_VERSION := "1.1.1"
 
 ## OpenAPI BoxOpenRequest.requestId 와 같다.
 static var _BOX_REQUEST_ID := RegEx.create_from_string("^[A-Za-z0-9_-]{8,64}$")
@@ -912,8 +912,10 @@ func fetch_config(target: Dictionary, callback: Callable = Callable()) -> void:
 		func(response: Dictionary) -> void:
 			if response.get("ok", false):
 				_set_config(response["result"])
+			# Startup remains fail-open; callers can separately report connectivity.
 			_invoke(callback, {
 				"ok": true,
+				"networkOk": response.get("ok", false) == true,
 				"result": _config,
 				"code": "",
 				"message": "",

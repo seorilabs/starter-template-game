@@ -1,0 +1,199 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://addons/seorilabs_game/ui_kit/cutscene_player.gd" id="1"]
+
+[sub_resource type="Gradient" id="vignette_gradient"]
+offsets = PackedFloat32Array(0.45, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.85)
+
+[sub_resource type="GradientTexture2D" id="vignette"]
+gradient = SubResource("vignette_gradient")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 1)
+
+[sub_resource type="Gradient" id="shade_gradient"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.66)
+
+[sub_resource type="GradientTexture2D" id="shade"]
+gradient = SubResource("shade_gradient")
+width = 4
+height = 64
+fill_to = Vector2(0, 1)
+
+[node name="CutscenePlayer" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.027451, 0.0196078, 0.0392157, 1)
+
+[node name="Stage" type="Control" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Back" type="TextureRect" parent="Stage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Front" type="TextureRect" parent="Stage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Vignette" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("vignette")
+expand_mode = 1
+
+[node name="Shade" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = SubResource("shade")
+expand_mode = 1
+
+[node name="Flash" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="Captions" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Column" type="VBoxContainer" parent="Captions"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
+[node name="TitleCard" type="VBoxContainer" parent="Captions/Column"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Captions/Column/TitleCard"]
+layout_mode = 2
+theme_type_variation = &"DisplayLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Tagline" type="Label" parent="Captions/Column/TitleCard"]
+layout_mode = 2
+theme_type_variation = &"DisplayLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Count" type="Label" parent="Captions/Column"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"NumberLabel"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Captions/Column"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Credits" type="Control" parent="."]
+visible = false
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Roll" type="VBoxContainer" parent="Credits"]
+layout_mode = 0
+mouse_filter = 2
+
+[node name="End" type="CenterContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Continue" type="Button" parent="End"]
+custom_minimum_size = Vector2(260, 56)
+layout_mode = 2
+focus_mode = 0
+theme_type_variation = &"PrimaryButton"
+text = "Continue"
+
+[node name="Skip" type="Button" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -140.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 72.0
+grow_horizontal = 0
+focus_mode = 0
+text = "Skip"

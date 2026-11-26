@@ -10,9 +10,10 @@ import tarfile
 from pathlib import Path, PurePosixPath
 
 ROOTS = ('godot/addons/seorilabs_game', 'godot/addons/seorilabs_platform', 'godot/tests/common')
-# 1.1.0은 ui_kit(테마·모션·효과음·HUD 층·보상 연출)을 더한 하위 호환 묶음이다. 1.0.0 묶음 위에 설치할 수 있고 그 반대는 거부한다.
-VERSIONS = ('1.0.0', '1.1.0')
-CURRENT = '1.1.0'
+# 1.1.0은 ui_kit(테마·모션·효과음·HUD 층·보상 연출)을, 1.2.0은 컷신 재생기·크레딧·테스트실(dev/)을 더한 하위 호환 묶음이다.
+# 낮은 버전 묶음 위에 설치할 수 있고 그 반대는 거부한다.
+VERSIONS = ('1.0.0', '1.1.0', '1.2.0')
+CURRENT = '1.2.0'
 REPOSITORY = 'https://github.com/seorilabs/game-foundation'
 
 def sha(data):
@@ -68,10 +69,12 @@ def pack(root, commit, out):
         if Path(name).suffix in ('.uid', '.import'):
             continue
         payload[name] = git(root, 'cat-file', 'blob', oid)
+    if 'godot/addons/seorilabs_platform/VERSION' not in payload:
+        raise ValueError('SDK VERSION missing from the selected bundle source')
     lock = {'schemaVersion': 1, 'version': CURRENT, 'roots': list(ROOTS),
             'source': {'repository': REPOSITORY, 'commit': commit},
-            'sdk': {'version': '1.1.0', 'archiveSha256': '77a1dd4ce627f93f9bbe716924202c3c93c047f3cf4bdd59c05294cbc950ec5c',
-                    'source': 'https://github.com/seorilabs/platform/releases/tag/v1.1.0'},
+            'sdk': {'version': payload['godot/addons/seorilabs_platform/VERSION'].decode().strip(), 'baseArchiveSha256': '77a1dd4ce627f93f9bbe716924202c3c93c047f3cf4bdd59c05294cbc950ec5c',
+                    'source': 'https://github.com/seorilabs/platform/tree/245427be79729915113e876cacbaa8a772f032bd/sdk-gdscript'},
             'files': {name: sha(data) for name, data in sorted(payload.items())}}
     validate_manifest(lock)
     # Exclusive creation avoids replacing a reviewed or user-owned bundle.

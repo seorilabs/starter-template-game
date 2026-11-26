@@ -10,7 +10,7 @@
 - English app name: 확정 필요
 - Android package name: 확정 필요
 - iOS bundle ID: 확정 필요
-- AppsInToss appName: 확정 필요
+- Steam App ID: 확정 필요
 - Firebase project ID: 확정 필요
 
 ## Local Tooling

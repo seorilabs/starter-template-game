@@ -2,7 +2,7 @@
   "name": "seorilabs-starter-template-game",
   "version": "0.1.0",
   "private": true,
-  "description": "Seorilabs Godot game template for Google Play, App Store, and AppsInToss.",
+  "description": "Seorilabs Godot game template for Google Play, App Store, and Steam.",
   "engines": {
     "node": ">=24 <25"
   },

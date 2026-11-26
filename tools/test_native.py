@@ -1,3 +1,4 @@
+import configparser
 import json
 import shutil
 import tempfile
@@ -14,6 +15,26 @@ class NativeExportTests(unittest.TestCase):
         for name in ['native/dependencies.lock.json','godot/project.godot','godot/export_presets.cfg','godot/config/product.json','play-store/google-play.config.json','app-store/app-store.config.json','app-store/exportOptions.plist',*[entry['file'] for entry in patches]]:
             target=root/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(ROOT/name,target)
         return root
+    def edit_preset(self,root,name,changes):
+        # 같은 exclude_filter 문자열이 여러 preset에 있으므로 이름으로 찾은 section만 바꾼다.
+        path=root/'godot/export_presets.cfg';cfg=check_native.load_presets(root)
+        base=[s for s in cfg.sections() if not s.endswith('.options') and check_native.value(cfg,s,'name')==name]
+        self.assertEqual(1,len(base),name)
+        for key,item in changes.items():
+            section=base[0]+('.options' if key.startswith('options:') else '')
+            option=key.removeprefix('options:')
+            if item is None:cfg.remove_option(section,option)
+            else:cfg.set(section,option,json.dumps(item))
+        with path.open('w') as handle:cfg.write(handle,space_around_delimiters=False)
+    def remove_preset(self,root,name):
+        path=root/'godot/export_presets.cfg';cfg=check_native.load_presets(root)
+        for base in [s for s in cfg.sections() if not s.endswith('.options') and check_native.value(cfg,s,'name')==name]:
+            cfg.remove_section(base);cfg.remove_section(base+'.options')
+        with path.open('w') as handle:cfg.write(handle,space_around_delimiters=False)
+    def filters(self,root,name,key):
+        cfg=check_native.load_presets(root)
+        base=[s for s in cfg.sections() if not s.endswith('.options') and check_native.value(cfg,s,'name')==name][0]
+        return [x for x in (check_native.value(cfg,base,key) or '').split(',') if x]
     def test_changed_vendor_patch_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             root=self.clone_config(folder);p=root/'godot/addons/admob/admob.gd';p.write_text(p.read_text()+'\n# changed\n')
@@ -36,4 +57,37 @@ class NativeExportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root=self.clone_config(folder);p=root/'godot/project.godot';p.write_text(p.read_text().replace('textures/vram_compression/import_etc2_astc=true','textures/vram_compression/import_etc2_astc=false'))
             self.assertIn('Mobile texture import must be enabled for native exports',check_native.validate(root))
+    def test_desktop_presets_are_required(self):
+        for name in ['Windows Desktop','macOS','Linux']:
+            with self.subTest(name),tempfile.TemporaryDirectory() as folder:
+                root=self.clone_config(folder);self.remove_preset(root,name)
+                self.assertIn('Missing or duplicate export preset: '+name,check_native.validate(root))
+    def test_release_presets_exclude_test_room(self):
+        for name in ['Android','iOS','Windows Desktop','macOS','Linux']:
+            with self.subTest(name),tempfile.TemporaryDirectory() as folder:
+                root=self.clone_config(folder)
+                kept=[x for x in self.filters(root,name,'exclude_filter') if x!='addons/seorilabs_game/dev/**']
+                self.edit_preset(root,name,{'exclude_filter':','.join(kept)})
+                self.assertIn(name+' must exclude addons/seorilabs_game/dev/**',check_native.validate(root))
+    def test_web_playtest_keeps_test_room(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=self.clone_config(folder)
+            self.edit_preset(root,'Web',{'exclude_filter':','.join([*self.filters(root,'Web','exclude_filter'),'addons/seorilabs_game/dev/**'])})
+            self.assertIn('Web playtest preset must keep addons/seorilabs_game/dev/**',check_native.validate(root))
+    def test_playtest_feature_only_on_web(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=self.clone_config(folder);self.edit_preset(root,'Web',{'custom_features':''})
+            self.assertIn('Web playtest preset must enable the playtest feature',check_native.validate(root))
+        for name in ['Android','iOS','Windows Desktop','macOS','Linux']:
+            with self.subTest(name),tempfile.TemporaryDirectory() as folder:
+                root=self.clone_config(folder);self.edit_preset(root,name,{'custom_features':'release,playtest'})
+                self.assertIn(name+' must not enable the playtest feature',check_native.validate(root))
+    def test_missing_desktop_texture_import_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=self.clone_config(folder);p=root/'godot/project.godot';p.write_text(p.read_text().replace('textures/vram_compression/import_s3tc_bptc=true\n',''))
+            self.assertIn('Desktop texture import must be enabled for desktop exports',check_native.validate(root))
+    def test_mismatched_macos_identity_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=self.clone_config(folder);self.edit_preset(root,'macOS',{'options:application/bundle_identifier':'com.other.wrong'})
+            self.assertIn('macOS bundle identity mismatch',check_native.validate(root))
 if __name__=='__main__':unittest.main()

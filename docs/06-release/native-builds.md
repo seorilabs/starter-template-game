@@ -18,6 +18,23 @@ Android는 GODOT_ANDROID_KEYSTORE_RELEASE_PATH, GODOT_ANDROID_KEYSTORE_RELEASE_U
 
 네이티브 프리셋의 runnable=false는 Godot의 자동 연결 기기 탐색을 막는다. 이름을 지정한 export와 archive에는 영향을 주지 않는다. 이를 켜거나 기기를 조회할 권한은 이 빌드 절차에 포함되지 않는다.
 
+## PC 데스크톱 export
+
+Steam(PC) 출시용 preset은 Windows Desktop(x86_64), macOS(universal), Linux(x86_64)다. Godot은 출력 폴더를 만들지 않으므로 먼저 만든다. 경로는 godot 폴더 기준이다.
+
+```sh
+mkdir -p build/desktop/windows build/desktop/macos build/desktop/linux
+godot --headless --path godot --export-release "Windows Desktop" ../build/desktop/windows/starter-template-game.exe
+godot --headless --path godot --export-release "macOS" ../build/desktop/macos/starter-template-game.zip
+godot --headless --path godot --export-release "Linux" ../build/desktop/linux/starter-template-game.x86_64
+```
+
+데스크톱 export는 project.godot의 `rendering/textures/vram_compression/import_s3tc_bptc=true`가 필요하다. 모바일용 `import_etc2_astc`도 함께 켜 둔다. macOS preset은 Godot 내장 ad-hoc 서명만 하고 공증하지 않는다. 배포 서명과 공증, Steamworks 앱 등록, SteamPipe 업로드와 GodotSteam 연결은 아직 없으며 첫 Steam 출시 후보 때 실제 계정으로 확인하며 만든다. init:game은 macOS bundle identifier도 바꾸지 않으므로 native 검사가 Android, iOS와 같이 불일치를 알린다.
+
+## 테스트실과 플레이테스트 빌드
+
+game-foundation 묶음의 `addons/seorilabs_game/dev/`(테스트실)는 출시 빌드에 넣지 않는다. Web을 뺀 모든 preset의 exclude_filter에 `addons/seorilabs_game/dev/**`, `tests/**`, `game/scenarios/**`가 있어야 한다. Web preset은 Pages 웹 플레이테스트 전용이며 `playtest` 기능 태그를 켜고 테스트실을 포함한다. 출시용 Web 빌드가 필요하면 이름이 다른 preset을 새로 만들고 테스트실을 뺀다. `npm run check:native`가 이 규칙을 정적으로 검사한다. 실제 포함 여부는 `--export-pack`으로 만든 zip의 파일 목록으로 확인한다.
+
 ## 내부 배포
 
 Initialize Release Version Ledger를 신규 저장소에서 먼저 실행하고, Release Tag에서 사용자가 정한 v1.0.0을 명시한다. 기존 출시 이력이 있는 제품은 실제 provider readback을 사용하는 중앙 원장 절차를 먼저 따른다. 태그나 번호를 직접 계산하거나 이동하지 않는다.

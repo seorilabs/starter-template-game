@@ -18,5 +18,5 @@
 
 ## Release
 
-- Google Play, App Store, AppsInToss, Firebase blocker를 분리해 inventory한다.
+- Google Play, App Store, Steam, Firebase blocker를 분리해 inventory한다.
 

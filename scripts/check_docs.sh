@@ -8,7 +8,7 @@ required_files=(
   "docs/03-architecture/clean-architecture.md"
   "docs/05-markets/google-play.md"
   "docs/05-markets/app-store.md"
-  "docs/05-markets/apps-in-toss.md"
+  "docs/01-planning/release-targets.md"
   "docs/06-release/release-checklist.md"
   "docs/07-qa/test-strategy.md"
   "docs/08-ops/dependencies.md"
