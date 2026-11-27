@@ -18,9 +18,9 @@ general/ios/app_id="ca-app-pub-9932778305312246~5356551184"
 config/name="Seorilabs Game Starter"
 config/version="1.1.0"
 run/main_scene="res://game/bootstrap/main.tscn"
-boot_splash/show_image=false
-boot_splash/bg_color=Color(0.00784314, 0.0431373, 0.0862745, 1)
 config/features=PackedStringArray("4.7")
+boot_splash/bg_color=Color(0.00784314, 0.0431373, 0.0862745, 1)
+boot_splash/show_image=false
 config/icon="res://game/assets/icon.svg"
 
 [display]
