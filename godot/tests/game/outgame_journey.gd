@@ -15,6 +15,7 @@ func text_button(main: Node, value: String) -> Button:
 func mount_game(path: String, home: String = "") -> Control:
  var main: Control = load(ProjectSettings.get_setting("application/run/main_scene")).instantiate()
  main.connect_platform = false
+ main.show_studio_splash = false
  main.state = State.new(path)
  main.device_locale = "en-US"
  if not home.is_empty(): main.home_profile = home

@@ -38,6 +38,7 @@ func run() -> void:
 	DirAccess.make_dir_recursive_absolute(directory)
 	main = load("res://game/bootstrap/main.tscn").instantiate()
 	main.connect_platform = false
+	main.show_studio_splash = false
 	main.device_locale = arg("--locale", "en-US")
 	main.state = State.new(directory + "/local.json")
 	main.clipboard_writer = func(_value: String) -> bool: return true
