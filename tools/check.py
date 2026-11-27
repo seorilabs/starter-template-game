@@ -53,6 +53,9 @@ def main():
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/ui_kit_probe.gd', '--', '--out', str(out / 'ui-kit.json')],
                     [godot, '--headless', '--path', str(project), '--script', 'res://tests/common/dev_probe.gd', '--', '--out', str(out / 'dev.json')],
                     [godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']), '--path', str(project), '--script', script, '--', '--out', str(out), '--size', a.size, *(['--capture'] if a.capture else [])]]
+        commands.append([godot, *(['--audio-driver', 'Dummy'] if a.capture else ['--headless']),
+                         '--path', str(project), '--script', 'res://tests/common/studio_splash_probe.gd', '--',
+                         '--out', str(out / 'studio-splash'), *(['--capture'] if a.capture else [])])
         if (project / 'tests/game/core_probe.gd').is_file():
             commands.append([godot, '--headless', '--path', str(project), '--script', 'res://tests/game/core_probe.gd'])
         for probe in ['accounts_probe.gd', 'account_services_probe.gd']:

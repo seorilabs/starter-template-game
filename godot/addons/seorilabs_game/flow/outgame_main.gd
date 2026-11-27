@@ -18,10 +18,12 @@ const HudLayers = preload("res://addons/seorilabs_game/ui_kit/hud_layers.tscn")
 const CurrencyChip = preload("res://addons/seorilabs_game/ui_kit/currency_chip.tscn")
 const RewardCeremony = preload("res://addons/seorilabs_game/ui_kit/reward_ceremony.tscn")
 const CutscenePlayer = preload("res://addons/seorilabs_game/ui_kit/cutscene_player.tscn")
+const StudioSplash = preload("res://addons/seorilabs_game/studio_splash/studio_splash.gd")
 ## 테스트실은 preload하지 않는다. 출시 export는 dev/를 빼므로 디버그·playtest 빌드에서 파일이 있을 때만 load()한다.
 const TEST_ROOM := "res://addons/seorilabs_game/dev/test_room.tscn"
 const FONTS := "res://addons/seorilabs_game/fonts/"
 @export var landscape := false
+@export var show_studio_splash := false
 @export var game_title := "Game"
 @export var game_title_ko := "Game"
 @export var studio_name := "Seorilabs"
@@ -208,6 +210,14 @@ func _ready() -> void:
 			DisplayServer.clipboard_set(value)
 			return DisplayServer.clipboard_get() == value
 	_initialize()
+	if show_studio_splash:
+		var splash := StudioSplash.new()
+		if splash.load_art():
+			splash.name = "StudioSplash"
+			splash.reduced_motion = bool(state.data.get("settings", {}).get("reduced_motion", false))
+			layers.layer("System").add_child(splash)
+		else:
+			splash.free()
 
 func language() -> String:
 	return Locale.resolve(str(state.data.get("settings", {}).get("language", "system")), device_locale)
