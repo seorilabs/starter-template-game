@@ -168,6 +168,18 @@ func _check_reward(reduced: bool) -> void:
 	low.skip()
 	low.queue_free()
 	await process_frame
+	# 작은 가로 카드: compact 항목은 아이콘(44px)과 글자를 한 줄로 놓아 낮은 화면에서 높이를 줄인다. 기본 카드는 세로 그대로다.
+	var compact: Control = RewardCeremony.instantiate()
+	host.add_child(compact)
+	compact.present([{"icon": load("res://addons/seorilabs_game/skins/soft_adventure/icon_coin.png"), "amount": 10, "label": "coins", "compact": true}, {"amount": 3, "label": "pearls"}], "")
+	await process_frame
+	var cards: Array = compact.get_node("Stage/Column/Items").get_children()
+	var compact_icon: TextureRect = cards[0].get_child(0) if cards.size() == 2 else null
+	check(cards.size() == 2 and cards[0] is HBoxContainer and cards[1] is VBoxContainer, "reward %s: compact card is a row, default card stays a column" % _mode(reduced))
+	check(compact_icon != null and compact_icon.custom_minimum_size == Vector2(44, 44), "reward %s: compact icon is 44px" % _mode(reduced))
+	compact.skip()
+	compact.queue_free()
+	await process_frame
 
 func _check_sfx() -> void:
 	var panel := Control.new()

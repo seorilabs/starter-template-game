@@ -150,6 +150,32 @@ func mark_intro_seen() -> bool:
 	next.intro_seen = true
 	return commit(next)
 
+## 진행 초기화: 이 기기의 진행을 처음으로 되돌린다. 설정, 동의 버전, 보낸 분석 사건의 중복 방지 기록, 프롤로그 본 기록과
+## 구매 진행 기록(ui.commerce)은 남긴다. 제품은 product(previous, next)로 자기 저장 키를 정리하고 남길 값을 옮겨 next를 돌려준다.
+## 제품이 사전이 아니거나 빈 사전을 돌려주면 reset_refused로 거부한다. 쓰기는 한 번에 확정하고 실패하면 기존 저장을 그대로 둔다.
+func reset_progress(product: Callable = Callable()) -> bool:
+	# 읽지 못한 저장(손상, 새 버전)은 초기화로 덮어쓰지 않는다. 기존 바이트를 보존하는 규칙과 같다.
+	if not valid(data):
+		error = "save_corrupt"
+		return false
+	var previous: Dictionary = data.duplicate(true)
+	var next := defaults()
+	next.settings = previous.settings.duplicate(true)
+	next.consentVersion = previous.consentVersion
+	next.events = previous.events.duplicate(true)
+	if previous.get("intro_seen", false) == true:
+		next.intro_seen = true
+	var ui: Variant = previous.get("ui", {})
+	if ui is Dictionary and ui.get("commerce") is Dictionary:
+		next.ui.commerce = ui.commerce.duplicate(true)
+	if product.is_valid():
+		var shaped: Variant = product.call(previous, next.duplicate(true))
+		if not shaped is Dictionary or shaped.is_empty():
+			error = "reset_refused"
+			return false
+		next = shaped
+	return commit(next)
+
 func ensure_run() -> bool:
 	if not str(data.ui.get("runId", "")).is_empty():
 		return true

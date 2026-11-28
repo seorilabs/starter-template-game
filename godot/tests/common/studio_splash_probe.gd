@@ -32,23 +32,22 @@ func _run() -> void:
 
 
 func _exercise_regular(main: Control, splash: Node) -> void:
-	_check(splash.is_visible(), "First Light must be visible on cold launch")
-	_check(splash.selected_orientation == "landscape", "Wide view uses the landscape art")
-	if driver.capture:
-		await create_timer(0.85).timeout
-		splash.set_process(false)
-		await driver.shot("first-light-landscape", false)
-	for viewport_size in [Vector2i(320, 568), Vector2i(390, 844), Vector2i(1920, 800)]:
+	_check(splash.is_visible(), "The studio logo is visible on cold launch")
+	_check(splash.has_method("artwork_rect"), "Artwork uses one contained official lockup")
+	if not splash.has_method("artwork_rect"):
+		return
+	for viewport_size in [Vector2i(320, 568), Vector2i(390, 844), Vector2i(568, 320), Vector2i(844, 390), Vector2i(768, 1024)]:
 		driver.viewport.size = viewport_size
 		await driver.frames()
-		_check(splash.selected_orientation == ("portrait" if viewport_size.x < viewport_size.y else "landscape"),
-			"Resizing selects the correct orientation at %s" % viewport_size)
+		var rect: Rect2 = splash.artwork_rect()
+		var bounds := Rect2(Vector2.ZERO, Vector2(viewport_size))
+		_check(bounds.encloses(rect) and rect.get_center().is_equal_approx(bounds.get_center()),
+			"Full logo fits and is centered at %s" % viewport_size)
+		_check(is_equal_approx(rect.size.aspect(), 384.0 / 168.0), "Logo proportions are preserved")
 		if driver.capture:
-			await driver.shot("first-light-%dx%d" % [viewport_size.x, viewport_size.y], false)
-	if driver.capture:
-		splash.set_process(true)
-	_check(main.progress >= 2, "Initialization runs while First Light is visible")
-	_check(await _closed(main, 1.25), "Splash automatically reveals the title")
+			await driver.shot("studio-logo-%dx%d" % [viewport_size.x, viewport_size.y], false)
+	_check(main.progress >= 2, "Initialization runs while the logo is visible")
+	_check(await _closed(main, 1.3), "Splash automatically reveals the title")
 	_check(main.screen == "title" and main.initialized, "Successful startup lands on the ready title")
 
 
@@ -56,11 +55,12 @@ func _exercise_motion_and_error() -> void:
 	var main := await _mount("reduced", true)
 	var splash := main.find_child("StudioSplash", true, false)
 	_check(splash != null and splash.reduced_motion, "Splash reads saved reduced motion")
-	_check(await _closed(main, 0.45), "Reduced-motion splash is a short still")
+	_check(not await _closed(main, 0.75), "Reduced motion keeps the logo visible for a readable hold")
+	_check(await _closed(main, 0.55), "Reduced motion reveals the title automatically")
 	await driver.unmount(main)
 
+	main = await _mount("input")
 	for kind in ["keyboard", "mouse", "touch"]:
-		main = await _mount(kind)
 		var event: InputEvent
 		if kind == "keyboard":
 			var key := InputEventKey.new()
@@ -82,12 +82,16 @@ func _exercise_motion_and_error() -> void:
 		event.pressed = false
 		driver.viewport.push_input(event)
 		await driver.frames()
-		_check(main.find_child("StudioSplash", true, false) == null and main.screen == "title",
-			"%s dismisses the splash without starting the game" % kind)
-		await driver.unmount(main)
+		_check(main.find_child("StudioSplash", true, false) != null and main.screen == "title",
+			"%s is blocked without skipping the logo or starting the game" % kind)
+	main.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(main.find_child("StudioSplash", true, false) != null and main.screen == "title",
+		"Android back does not navigate under the splash")
+	_check(await _closed(main, 1.3) and main.screen == "title", "Input does not interfere with the transition")
+	await driver.unmount(main)
 
 	main = await _mount("corrupt", false, true)
-	_check(await _closed(main, 1.25) and not main.startup_error.is_empty() and not main.initialized,
+	_check(await _closed(main, 1.3) and not main.startup_error.is_empty() and not main.initialized,
 		"Corrupt saves still show the title error after the splash")
 	await driver.unmount(main)
 

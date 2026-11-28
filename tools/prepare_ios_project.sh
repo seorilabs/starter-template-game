@@ -12,6 +12,7 @@ if ! "${GODOT:-godot}" --headless --path "$root/${PROJECT_DIR:-godot}" --script 
 fi
 cat "$log"
 if grep -Eq '^(SCRIPT ERROR|ERROR:)' "$log"; then exit 1; fi
+python3 "$root/tools/configure_ios_launch.py" "$XCODE_PROJECT"
 python3 - "$XCODE_PROJECT" <<'PY'
 from pathlib import Path
 import plistlib,sys

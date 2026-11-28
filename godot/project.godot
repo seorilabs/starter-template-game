@@ -39,6 +39,7 @@ enabled=PackedStringArray("res://addons/seori_account_link/plugin.cfg", "res://a
 theme/default_font_multichannel_signed_distance_field=true
 
 [rendering]
+environment/defaults/default_clear_color=Color(0.00784314, 0.0431373, 0.0862745, 1)
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

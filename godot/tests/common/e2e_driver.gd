@@ -38,6 +38,11 @@ func mount(node: Node) -> Node:
 func unmount(node: Node) -> void:
 	node.queue_free()
 	await frames(2)
+	# AudioServer의 비동기 stop은 실제 시간이 필요하다. 빠른 headless/fixed-FPS에서도
+	# 해제한 장면의 재생 자원이 정리된 뒤 다음 fixture로 넘어간다.
+	var audio_deadline: int = Time.get_ticks_msec() + 200
+	while Time.get_ticks_msec() < audio_deadline:
+		await tree.process_frame
 
 
 func begin(id: String, feature_ids: Array) -> void:
@@ -144,13 +149,21 @@ func scroll_into_view(control: Control, max_drags := 30) -> bool:
 		var before := Vector2(scroll.scroll_horizontal, scroll.scroll_vertical)
 		var center := view.get_center()
 		await drag(center, center - move, 10, 0.25)
-		await _settle(scroll)
+		if not await _settle(scroll, 120, control):
+			# 끝없이 움직이는 대상(유휴 맥동 등)은 안정되지 않는다. 시간 초과면 지금의 보임 조건으로 판정한다.
+			return _in_scroll_view(control, scroll)
 		if Vector2(scroll.scroll_horizontal, scroll.scroll_vertical) == before:
-			return false
-	var view_end := scroll.get_global_rect()
-	var rect_end := control.get_global_rect()
-	return _axis_move(view_end.position.x, view_end.size.x, rect_end.position.x, rect_end.size.x) == 0.0 \
-		and _axis_move(view_end.position.y, view_end.size.y, rect_end.position.y, rect_end.size.y) == 0.0
+			# 안내문이나 컨테이너 크기가 바뀌면 스크롤 위치가 같아도 대상이 보일 수 있다.
+			# 배치가 안정된 뒤에도 기존의 보임 조건으로 판정한다.
+			return _in_scroll_view(control, scroll)
+	return _in_scroll_view(control, scroll)
+
+
+func _in_scroll_view(control: Control, scroll: ScrollContainer) -> bool:
+	var view := scroll.get_global_rect()
+	var rect := control.get_global_rect()
+	return _axis_move(view.position.x, view.size.x, rect.position.x, rect.size.x) == 0.0 \
+		and _axis_move(view.position.y, view.size.y, rect.position.y, rect.size.y) == 0.0
 
 
 # 렌더링 모드에서만 장면을 PNG로 남긴다. headless에서는 아무것도 하지 않는다.
@@ -243,14 +256,26 @@ func _scroll_parent(control: Control) -> ScrollContainer:
 	return node as ScrollContainer
 
 
-func _settle(scroll: ScrollContainer, max_frames := 120) -> void:
-	var previous := Vector2i(-1, -1)
+func _settle(scroll: ScrollContainer, max_frames := 120, control: Control = null) -> bool:
+	var previous: Array = []
+	var stable := 0
 	for i in max_frames:
-		var now := Vector2i(scroll.scroll_horizontal, scroll.scroll_vertical)
+		var now: Array = [Vector2i(scroll.scroll_horizontal, scroll.scroll_vertical),
+			scroll.get_global_rect(), scroll.get_v_scroll_bar().max_value,
+			scroll.get_v_scroll_bar().page, scroll.get_h_scroll_bar().max_value,
+			scroll.get_h_scroll_bar().page]
+		if control != null: now.append(control.get_global_rect())
 		if now == previous:
-			return
+			stable += 1
+		else:
+			stable = 0
+		# 6프레임에 걸친 동일 상태4개를 확인한다. 화면·대상이 움직이는 동안
+		# 스크롤 위치만 잠깐 멈춘 상태는 안정화로 판정하지 않는다.
+		if stable >= 3:
+			return true
 		previous = now
 		await frames(2)
+	return false
 
 
 func _push_button(pos: Vector2, pressed: bool) -> void:

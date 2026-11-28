@@ -78,8 +78,24 @@ func _run() -> void:
 	check(not state.setting("music", "invalid") and state.data.settings.music == true, "invalid setting value persisted")
 	check(not state.action_completed("unrelated"), "an unrelated action advanced the guide")
 
+	# 진행 초기화: 제품이 거부하거나 잘못된 값을 주면 저장을 바꾸지 않고, 제품 훅 없이도 공용 진행만 처음으로 돌린다.
+	var progressed: Dictionary = state.data.duplicate(true)
+	progressed.coins = 7
+	progressed.intro_seen = true
+	progressed.product = {"level": 3}
+	check(state.commit(progressed), "seed progress")
+	var before := FileAccess.get_file_as_bytes(dir + "/state.json")
+	check(not state.reset_progress(func(_p: Dictionary, _n: Dictionary) -> Variant: return "broken") and state.error == "reset_refused", "invalid product reset accepted")
+	check(not state.reset_progress(func(_p: Dictionary, n: Dictionary) -> Dictionary:
+		n.coins = -1
+		return n) and state.error == "save_schema_invalid", "invalid reset state accepted")
+	check(FileAccess.get_file_as_bytes(dir + "/state.json") == before and state.data.coins == 7, "refused reset changed the save")
+	check(state.reset_progress() and state.data.coins == 0 and state.intro_seen() and not state.data.has("product"), "reset without a product hook")
+	var unread = State.new(dir + "/unread.json")
+	check(not unread.reset_progress() and unread.error == "save_corrupt" and not FileAccess.file_exists(dir + "/unread.json"), "reset before a valid load wrote a save")
+
 	if failures.is_empty():
-		print("Outgame contract probe passed: popups, commerce states, restore, conflict, invalid setting")
+		print("Outgame contract probe passed: popups, commerce states, restore, conflict, invalid setting, progress reset")
 		quit(0)
 	else:
 		for failure in failures:

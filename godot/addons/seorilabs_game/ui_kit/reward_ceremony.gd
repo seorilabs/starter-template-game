@@ -98,13 +98,14 @@ func _wait(seconds: float) -> void:
 		await get_tree().create_timer(seconds).timeout
 
 func _card(item: Dictionary) -> Control:
-	var card := VBoxContainer.new()
+	var compact := bool(item.get("compact", false))
+	var card: BoxContainer = HBoxContainer.new() if compact else VBoxContainer.new()
 	card.alignment = BoxContainer.ALIGNMENT_CENTER
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if item.get("icon") != null:
 		var icon := TextureRect.new()
 		icon.texture = item.icon
-		icon.custom_minimum_size = Vector2(64, 64)
+		icon.custom_minimum_size = Vector2(44, 44) if compact else Vector2(64, 64)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -119,7 +120,7 @@ func _card(item: Dictionary) -> Control:
 	if not str(item.get("label", "")).is_empty():
 		var label := Label.new()
 		label.text = str(item.label)
-		label.theme_type_variation = "DisplayLabel"
+		label.theme_type_variation = "TitleLabel" if compact else "DisplayLabel"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		card.add_child(label)

@@ -1,92 +1,67 @@
 extends Control
 
-const ART_DIR := "res://addons/seorilabs_game/studio_splash/"
+const LOGO: Texture2D = preload("res://addons/seorilabs_game/studio_splash/seori-labs-logo-stacked-reverse.svg")
 const BACKGROUND := Color("#020b16")
-const NORMAL_DURATION := 1.15
-const STILL_DURATION := 0.35
+const HOLD_MSEC := 1000
+const FADE_SECONDS := 0.15
 
 var reduced_motion := false
-var selected_orientation := ""
-var _elapsed := 0.0
-var _portrait: Texture2D
-var _landscape: Texture2D
-var _upper: Texture2D
-var _lower: Texture2D
-var _wordmark: Texture2D
-
-
-func load_art() -> bool:
-	_landscape = _texture("first-light-background-landscape.webp")
-	_portrait = _texture("first-light-background-portrait.webp")
-	_upper = _texture("first-light-upper.svg")
-	_lower = _texture("first-light-lower.svg")
-	_wordmark = _texture("first-light-wordmark.svg")
-	return _landscape != null and _portrait != null and _upper != null and _lower != null and _wordmark != null
-
-
-func _texture(file_name: String) -> Texture2D:
-	var path := ART_DIR + file_name
-	return load(path) as Texture2D if ResourceLoader.exists(path, "Texture2D") else null
+var _hold_until: int
+var _original_quit_on_back: Variant
 
 
 func _ready() -> void:
+	if get_viewport() == get_tree().root:
+		_original_quit_on_back = get_tree().is_quit_on_go_back()
+		get_tree().set_quit_on_go_back(false)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	resized.connect(queue_redraw)
-
-
-func _process(delta: float) -> void:
-	_elapsed += delta
-	if _elapsed >= (STILL_DURATION if reduced_motion else NORMAL_DURATION):
-		queue_free()
+	set_process(false)
+	if DisplayServer.get_name() == "headless":
+		await get_tree().process_frame
 	else:
-		queue_redraw()
+		await RenderingServer.frame_post_draw
+	_hold_until = Time.get_ticks_msec() + HOLD_MSEC
+	set_process(true)
 
 
-func _input(event: InputEvent) -> void:
-	get_viewport().set_input_as_handled()
-	if not event.is_pressed() or event.is_echo():
+func _exit_tree() -> void:
+	if _original_quit_on_back != null:
+		get_tree().set_quit_on_go_back(_original_quit_on_back)
+
+
+func _process(_delta: float) -> void:
+	if Time.get_ticks_msec() < _hold_until:
 		return
-	if event is InputEventMouseButton:
-		if event.button_index != MOUSE_BUTTON_LEFT:
-			return
-	elif not (event is InputEventKey or event is InputEventScreenTouch or event is InputEventJoypadButton):
-		return
+	set_process(false)
+	if not reduced_motion:
+		var fade := create_tween().set_ignore_time_scale()
+		fade.tween_property(self, "modulate:a", 0.0, FADE_SECONDS)
+		await fade.finished
 	queue_free()
 
 
+func _input(_event: InputEvent) -> void:
+	get_viewport().set_input_as_handled()
+
+
+func artwork_rect() -> Rect2:
+	var available := Rect2(Vector2.ZERO, size)
+	if get_viewport() == get_tree().root and (OS.has_feature("android") or OS.has_feature("ios")):
+		var window_size := Vector2(DisplayServer.window_get_size())
+		var safe := DisplayServer.get_display_safe_area()
+		if window_size.x > 0 and window_size.y > 0 and safe.has_area():
+			var scale_to_view := size / window_size
+			var safe_rect := Rect2(Vector2(safe.position) * scale_to_view, Vector2(safe.size) * scale_to_view)
+			var clipped := available.intersection(safe_rect)
+			if clipped.has_area():
+				available = clipped
+	var aspect := LOGO.get_size().aspect()
+	var width := minf(320.0, minf(available.size.x * 0.56, available.size.y * 0.38 * aspect))
+	var logo_size := Vector2(width, width / aspect)
+	return Rect2(available.get_center() - logo_size * 0.5, logo_size)
+
+
 func _draw() -> void:
-	if size.x <= 0.0 or size.y <= 0.0 or _landscape == null:
-		return
-	var portrait := size.x < size.y
-	selected_orientation = "portrait" if portrait else "landscape"
-	var plate := _portrait if portrait else _landscape
-	var dimensions := plate.get_size()
-	var cover := dimensions * maxf(size.x / dimensions.x, size.y / dimensions.y)
 	draw_rect(Rect2(Vector2.ZERO, size), BACKGROUND)
-	draw_texture_rect(plate, Rect2((size - cover) * 0.5, cover), false, _light(_reveal(0.0, 0.65)))
-
-	var safe_width := minf(size.x, size.y * dimensions.aspect())
-	var symbol_width := safe_width * (0.2912 if portrait else 0.131075)
-	var name_width := safe_width * (0.82 if portrait else 0.434)
-	var name_size := Vector2(name_width, name_width / _wordmark.get_size().aspect())
-	var gap := safe_width * (0.022 if portrait else 0.0115)
-	var top := (size.y - symbol_width - name_size.y - gap) * 0.5
-	var symbol_position := Vector2((size.x - symbol_width) * 0.5, top)
-	var name_position := Vector2((size.x - name_width) * 0.5, top + symbol_width + gap)
-
-	_draw_half(_upper, symbol_position, symbol_width, Vector2(-0.3, -0.14), _reveal(0.12, 0.62))
-	_draw_half(_lower, symbol_position, symbol_width, Vector2(0.3, 0.14), _reveal(0.17, 0.62))
-	draw_texture_rect(_wordmark, Rect2(name_position, name_size), false, _light(_reveal(0.48, 0.35)))
-
-
-func _draw_half(art: Texture2D, origin: Vector2, width: float, offset: Vector2, reveal: float) -> void:
-	var position_on_screen := origin + offset * width * (1.0 - reveal)
-	draw_texture_rect(art, Rect2(position_on_screen, Vector2(width, width)), false, _light(reveal))
-
-
-func _reveal(delay: float, duration: float) -> float:
-	return 1.0 if reduced_motion else smoothstep(0.0, 1.0, (_elapsed - delay) / duration)
-
-
-func _light(alpha: float) -> Color:
-	return Color(1.0, 1.0, 1.0, alpha)
+	draw_texture_rect(LOGO, artwork_rect(), false)

@@ -46,6 +46,13 @@ var ending_script: Dictionary = {}
 ## 테스트실이 생기면 부른다. 제품은 여기서 행동, 플레이 시점 프리셋, 연출 다시 보기, 봐줄 점을 등록한다.
 ## _ready() 전에(bootstrap의 _init()에서) 정한다. 정하지 않으면 테스트실, F9, 설정 항목이 생기지 않는다.
 var test_room_setup: Callable
+## 진행 초기화(설정 > 진행 초기화). 제품이 정했고 이 기기 저장(로컬 모드)일 때만 보인다.
+## progress_reset(previous, next) -> Dictionary: 공용 초기화 결과 next에서 제품 저장 키를 정리하고 남길 값을 옮겨 돌려준다. 빈 사전이면 거부한다.
+var progress_reset: Callable
+## 초기화 화면에 덧붙이는 제품 안내 [[en, ko], ...]. 지워지는 것과 남는 것을 제품 말로 적는다.
+var progress_reset_notes: Array = []
+## 초기화를 저장한 뒤 한 번 온다. 제품은 메모리의 진행과 엔딩 본 기록(set_ending_seen)을 새 저장으로 다시 맞춘다.
+signal progress_was_reset
 ## test_room_setup이 있고 디버그·playtest 빌드일 때만 생기는 테스트실. 그 밖에는 null이다.
 var test_room: Control
 var cutscene: Control
@@ -65,6 +72,7 @@ var accounts = Accounts.new()
 var account_changed: Callable
 var gameplay_ready: Callable
 var resource_provider: Callable
+var mail_reward_name_provider: Callable
 var identity_provider: Callable
 var support_provider: Callable
 var clipboard_writer: Callable
@@ -89,6 +97,7 @@ var _font_title: Font
 var _font_body: Font
 var sfx: Node
 var layers: Node
+var _studio_splash: StudioSplash
 var ceremony: Control
 var _reward_serial := 0
 var _reward_presented := 0
@@ -211,13 +220,10 @@ func _ready() -> void:
 			return DisplayServer.clipboard_get() == value
 	_initialize()
 	if show_studio_splash:
-		var splash := StudioSplash.new()
-		if splash.load_art():
-			splash.name = "StudioSplash"
-			splash.reduced_motion = bool(state.data.get("settings", {}).get("reduced_motion", false))
-			layers.layer("System").add_child(splash)
-		else:
-			splash.free()
+		_studio_splash = StudioSplash.new()
+		_studio_splash.name = "StudioSplash"
+		_studio_splash.reduced_motion = bool(state.data.get("settings", {}).get("reduced_motion", false))
+		layers.layer("System").add_child(_studio_splash)
 
 func language() -> String:
 	return Locale.resolve(str(state.data.get("settings", {}).get("language", "system")), device_locale)
@@ -294,6 +300,8 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_RESUMED and initialized and services.sdk != null:
 		services.sdk.resume_presence()
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if is_instance_valid(_studio_splash):
+			return
 		# 컷신(스킵)과 테스트실(닫기)은 자기 뒤로 가기를 처리한다. 그 아래 화면은 움직이지 않는다.
 		if (cutscene != null and cutscene.state() != "idle") or (test_room != null and test_room.is_open()):
 			return
@@ -603,6 +611,7 @@ func _route(target: String) -> void:
 		"purchase": _draw_purchase()
 		"result": _draw_result()
 		"credits": _credits_screen()
+		"reset_progress": _reset_progress_screen()
 		"leaderboard":
 			if ranking.capabilities().get("list", false):
 				_draw_ranking()
@@ -793,6 +802,8 @@ func _settings() -> void:
 	_button(tr_text("Credits", "크레딧"), func() -> void: _open("credits"), box).name = "credits"
 	if test_room != null:
 		_button(tr_text("Test room", "테스트실"), open_test_room, box).name = "test_room"
+	if _progress_reset_available():
+		_button(tr_text("Reset progress", "진행 초기화"), func() -> void: _open("reset_progress"), box).name = "reset_progress"
 	for item in [["terms_url", "Terms", "약관"], ["privacy_url", "Privacy", "개인정보 처리방침"]]:
 		var url := str(config.get(item[0], ""))
 		if not url.is_empty():
@@ -839,6 +850,68 @@ func _credits_screen() -> void:
 				column.add_child(name_label)
 				lines.remove_at(0)
 			column.add_child(_label("\n".join(lines), 14))
+
+func _progress_reset_available() -> bool:
+	return progress_reset.is_valid() and services.mode == "local"
+
+## 첫 누름은 무장만 하고(판이 주 버튼으로 바뀐다), RESET_CONFIRM_DELAY_MS가 지난 뒤의 둘째 누름에 초기화한다.
+## 습관적인 두 번 누름이 확인 문구를 보기 전에 확정되지 않게 한다. 화면을 다시 그리면 무장이 풀린다.
+## 위에서부터 경고와 남는 것, 제품 안내(지워지는 것), 거부 이유, 버튼이다. 가로에서는 확인과 취소를 한 줄에 두어
+## 568x320에서도 첫 화면에 모두 보인다. 거부 이유는 토스트로도 알리고, 성공하면 그 토스트를 지운다.
+const RESET_CONFIRM_DELAY_MS := 600
+var _reset_toast: Control
+
+func _reset_progress_screen(notice: String = "") -> void:
+	_clear(tr_text("Reset progress", "진행 초기화"))
+	var box := _scroll()
+	box.add_child(_label(tr_text("Start over on this device. Settings, the opening scene and restorable purchases stay. This cannot be undone.", "이 기기에서 처음부터 다시 시작해요. 설정, 본 시작 장면, 복원할 수 있는 구매는 남아요. 되돌릴 수 없어요."), 16))
+	for note in progress_reset_notes:
+		box.add_child(_label(_pair_text(note), 14))
+	if not notice.is_empty():
+		var reason := _label(notice, 14)
+		reason.name = "reset_progress_notice"
+		box.add_child(reason)
+	var row: BoxContainer = HBoxContainer.new() if landscape else VBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	# 람다는 지역 변수를 값으로 잡으므로 무장 시각과 버튼은 배열로 함께 쓴다. 0이면 무장 전이다.
+	var armed: Array = [0, null]
+	var confirm := _button(tr_text("Reset progress", "진행 초기화"), func() -> void:
+		var now := Time.get_ticks_msec()
+		if armed[0] == 0:
+			armed[0] = now
+			# 주 버튼 판으로 바꿔도 높이와 글자 크기는 그대로 둬서 아래 버튼이 밀리지 않게 한다.
+			var button: Button = armed[1]
+			button.custom_minimum_size.y = button.size.y
+			button.add_theme_font_size_override("font_size", button.get_theme_font_size("font_size"))
+			button.text = tr_text("Tap again to reset", "한 번 더 눌러 초기화")
+			button.theme_type_variation = "PrimaryButton"
+			return
+		if now - int(armed[0]) < RESET_CONFIRM_DELAY_MS:
+			return
+		_apply_progress_reset()
+	, row)
+	armed[1] = confirm
+	confirm.name = "reset_progress_confirm"
+	_button(tr_text("Cancel", "취소"), _back, row).name = "reset_progress_cancel"
+
+func _apply_progress_reset() -> void:
+	if not _progress_reset_available():
+		_back()
+		return
+	if not state.reset_progress(progress_reset):
+		# 제품 결과가 저장 검사에 맞지 않아도 저장은 읽혔고 바뀌지 않았다. 손상 문구 대신 거부 문구를 쓴다.
+		var code: String = {"save_schema_invalid": "reset_refused", "save_failed": "reset_save_failed"}.get(state.error, state.error)
+		if is_instance_valid(_reset_toast): _reset_toast.queue_free()
+		_reset_toast = layers.toast(_error_text(code))
+		_reset_progress_screen(_error_text(code))
+		return
+	if is_instance_valid(_reset_toast): _reset_toast.queue_free()
+	navigation.clear()
+	_focus_stack.clear()
+	progress_was_reset.emit()
+	layers.toast(tr_text("Progress reset. Start again from the title.", "진행을 초기화했어요. 타이틀에서 다시 시작해요."))
+	_route("title")
 
 func _settings_toggles(box: VBoxContainer, pairs: Array) -> void:
 	for pair in pairs:
@@ -1159,6 +1232,8 @@ func _error_text(code: String) -> String:
 		"copied": return tr_text("Code copied", "코드를 복사했어요")
 		"copy_failed": return tr_text("Copy failed. Please try the Copy button again.", "복사하지 못했습니다. 복사 버튼을 다시 눌러 주세요.")
 		"save_failed": return tr_text("Could not save. Try again.", "저장하지 못했습니다. 다시 시도해 주세요.")
+		"reset_refused": return tr_text("Progress could not be reset. Nothing was changed.", "진행을 초기화하지 못했어요. 바뀐 것은 없어요.")
+		"reset_save_failed": return tr_text("Could not save the reset. Nothing was changed. Try again.", "초기화를 저장하지 못했어요. 바뀐 것은 없어요. 다시 해 주세요.")
 		"save_corrupt", "save_schema_invalid": return tr_text("The save could not be read. Your data was preserved.", "저장을 읽지 못했습니다. 기존 데이터는 보존했습니다.")
 		"save_newer_version": return tr_text("Update the game to open this save.", "이 저장을 열려면 게임을 업데이트해 주세요.")
 		"maintenance": return tr_text("Service maintenance, try again later.", "서비스 점검 중입니다. 잠시 후 다시 확인해 주세요.")
@@ -1220,7 +1295,11 @@ func _render_mail() -> void:
 			card.add_child(_label("+%d " % mail.amount + tr_text("coins", "코인"), 20))
 		else:
 			for reward in mail.get("rewards", []):
-				card.add_child(_label("%s ×%d" % [reward.entitlementId, reward.quantity], 20))
+				var name := str(reward.entitlementId)
+				if mail_reward_name_provider.is_valid():
+					name = str(mail_reward_name_provider.call(name))
+					if name.is_empty(): name = tr_text("Reward", "보상")
+				card.add_child(_label("%s ×%d" % [name, reward.quantity], 20))
 		card.add_child(_label(tr_text("Read", "읽음") if mail.readAt != 0 else tr_text("Unread", "읽지 않음"), 18))
 		if mail.expiresAt != 0:
 			card.add_child(_label(tr_text("Expires: ", "만료: ") + Time.get_datetime_string_from_unix_time(mail.expiresAt), 18))
