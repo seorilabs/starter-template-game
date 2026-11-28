@@ -14,9 +14,9 @@ REQUIRED = ('startup', 'tutorial', 'account_save', 'settings_support', 'inbox', 
 OPTIONAL = ('attendance', 'missions', 'achievements', 'events', 'shop', 'pass', 'ranking', 'friends', 'guild', 'push', 'review')
 SERVICES = ('auth', 'payments', 'ads', 'analytics', 'remote_config', 'mailbox')
 UI_CHECKS = ('ui_support_entry', 'ui_analytics_opt_out', 'ui_locale_offline', 'ui_navigation', 'ui_leaderboard')
-# 공통 묶음 계약 버전. 1.2.0(컷신·크레딧·테스트실)은 스킨을 바꾸지 않아 제품 skin.json 계약은 1.1.0 그대로다.
-UI_VERSIONS = ('1.0.0', '1.1.0', '1.2.0')
-SKIN_CONTRACTS = {'1.0.0': '1.0.0', '1.1.0': '1.1.0', '1.2.0': '1.1.0'}
+# 공통 묶음 계약 버전. 1.2.0(컷신·크레딧·테스트실)과 1.3.0(진행 초기화)은 스킨을 바꾸지 않아 제품 skin.json 계약은 1.1.0 그대로다.
+UI_VERSIONS = ('1.0.0', '1.1.0', '1.2.0', '1.3.0')
+SKIN_CONTRACTS = {'1.0.0': '1.0.0', '1.1.0': '1.1.0', '1.2.0': '1.1.0', '1.3.0': '1.1.0'}
 REPORT_CHECKS = {
     'render': ('startup', 'tutorial', 'reward', 'home', 'settings', 'inbox', 'empty', 'error', 'small_screen', 'large_text', 'touch_drag'),
     'device': ('startup', 'tutorial', 'resume', 'save', 'settings', 'inbox', 'touch'),

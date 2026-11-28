@@ -21,7 +21,8 @@ func run() -> void:
 	client._store_session(service.session())
 	var accounts := Accounts.new()
 	root.add_child(accounts)
-	var options: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/platform.json"))
+	var firebase := {"apiKey": "qa-unused", "projectId": "qa-isolated"}
+	var options := {"firebase": {"android": firebase, "ios": firebase}, "auth": {}}
 	accounts.configure(client, state, options, {"native": Boundaries.NativeIdentity.new(), "identity": Boundaries.Firebase.new(), "cloud": Boundaries.Storage.new(), "identity_path": path + ".identity", "receipt_path": path + ".receipt"})
 	accounts.operation_blocker = func() -> bool: return true
 	var generation: int = client.authentication_generation()

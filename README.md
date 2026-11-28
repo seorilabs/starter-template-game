@@ -20,7 +20,7 @@ npm run init:game -- --name "Orbit Stars" --id com.example.orbit --home hero
 
 기본 CI는 검사만 실행한다. Pages와 마켓 workflow는 수동이다. 현재 demo 앱의 승인 범위는 Google Play 내부 테스트와 TestFlight 내부 배포까지다. 실제 기기 검증, 심사 제출과 공개 출시는 포함하지 않는다. Seorilabs PR은 최신 중앙 리뷰 정책을 적용하고 한국어 Ready로 작성한다. 사용자 작업은 보존한다.
 
-New games open with First Light, the bundled Seori Labs studio splash. It selects landscape or portrait artwork and then hands off to the game title.
+New games open with the bundled Seori Labs studio splash. The transparent English logo appears on Night Navy for one second in either orientation while the game title prepares.
 
 첫 실행은 `python3 tools/run.py`로도 할 수 있습니다. `npm start`와 `npm test` 명령에는 Node.js 24가 필요합니다. 자원 준비는 네트워크를 사용하지 않으며 생성 캐시는 Git에 넣지 않습니다.
 
