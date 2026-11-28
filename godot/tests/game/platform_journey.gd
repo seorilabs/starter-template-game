@@ -51,8 +51,11 @@ func run() -> void:
 	cloud.privacy_marker = directory + "/privacy-off"
 	market = Boundaries.Market.new()
 	runtime = Runtime.new()
-	var options: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://config/platform.json"))
-	options.platform.presence_enabled = false
+	var firebase := {"apiKey": "qa-unused", "projectId": "qa-isolated"}
+	var ad := {"rewardedUnit": "qa-stub"}
+	var options := {"firebase": {"android": firebase, "ios": firebase}, "auth": {},
+		"platform": {"app_id": "qa-platform-journey", "base_url": "https://unused.invalid", "presence_enabled": false},
+		"admob": {"android": ad, "ios": ad}}
 	runtime.attach(main, options, {"sdk": client, "market": market, "market_platform": "app_store", "ad_native": Boundaries.Ad.new(), "ads_path_prefix": directory + "/ad-", "accounts": {"identity": Boundaries.Firebase.new(), "native": Boundaries.NativeIdentity.new(), "cloud": cloud, "receipt_path": directory + "/receipt.json", "identity_path": directory + "/identity.json", "legacy_path": directory + "/legacy.json", "migration_path": directory + "/migration.json"}})
 	d.begin("real-bootstrap-account-and-cloud", ["startup", "account_save", "platform_end_to_end", "ui_landscape"])
 	await d.mount(main)
